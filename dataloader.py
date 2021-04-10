@@ -29,6 +29,7 @@ class DataModule(pl.LightningDataModule):
         ])
 
         img_tf_val = transforms.Compose([
+            transforms.CenterCrop(256),
             transforms.ToTensor(),
             transforms.Normalize(mean = self.means,
                                   std = self.std)
