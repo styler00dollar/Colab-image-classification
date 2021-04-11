@@ -1,4 +1,3 @@
-#@markdown Warning: classes = amount folders + 1
 from efficientnet_pytorch import EfficientNet
 from adamp import AdamP
 #from adamp import SGDP
@@ -6,8 +5,9 @@ import numpy as np
 from statistics import mean
 import pytorch_lightning as pl
 import torch
-from accuracy import calculate_accuracy
+#from accuracy import calculate_accuracy
 from diffaug import DiffAugment
+#from pytorch_lightning.metrics import Accuracy
 
 class CustomTrainClass(pl.LightningModule):
   def __init__(self, model_train, num_classes, diffaug_activate, policy):
@@ -39,7 +39,6 @@ class CustomTrainClass(pl.LightningModule):
     self.accuracy_val = []
     self.losses_val = []
 
-    #@markdown
     self.policy = policy
 
   def training_step(self, train_batch, batch_idx):

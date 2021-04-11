@@ -46,12 +46,6 @@ def main():
     model.load_state_dict(torch.load(args.model_path, map_location=torch.device('cpu')))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    #rootdir = '/content/' #@param {type:"string"}
-
-    # probably depends on how categories are alphabetically sorted
-    #path0 = '/content/test/' #@param {type:"string"}
-    #path1 = '/content/test/' #@param {type:"string"}
-
     if not os.path.exists(args.path0):
         os.makedirs(args.path0)
     if not os.path.exists(args.path1):
@@ -61,7 +55,9 @@ def main():
     files_jpg = glob.glob(args.data_input_path + '/**/*.jpg', recursive=True)
     files.extend(files_jpg)
 
+    model.half()
     model.to(device)
+    model.eval()
 
     #height_min = 256
     #width_min = 256
@@ -69,7 +65,7 @@ def main():
     with torch.no_grad():
       for f in tqdm(files):
           image = cv2.imread(f)
-          #image = cv2.resize(image, (256,256))
+          image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
           # resizing to match original training, or detections will be bad
           height = image.shape[0]
@@ -100,34 +96,18 @@ def main():
           image = torch.from_numpy(image).unsqueeze(0).permute(0,3,1,2)/255
 
           image=image.to(device)
+          if device == 'cuda':
+              image=image.type(torch.cuda.HalfTensor)
 
-          y_pred = model(image)
+          y_pred= model(image)
 
-          #y_prob = F.softmax(y_pred, dim = -1)
-          #top_pred = y_prob.argmax(1, keepdim = True)
+          y_prob = torch.softmax(y_pred, dim=1)
+          top_pred = y_prob.argmax(1, keepdim = True)
 
-          y_pred = torch.softmax(y_pred, dim=1).float()
-          top_pred = np.argmax(y_pred.data.cpu().numpy(), axis=1).astype(np.uint8)
-
-          # Load class names
-          #import json
-          #labels_map = json.load(open('labels_map.txt'))
-          #labels_map = [labels_map[str(i)] for i in range(2)]
-
-          #preds = torch.topk(y_pred, k=1).indices.squeeze(0).tolist()
-          #print(preds)
-          #for idx in preds:
-          #  label = labels_map[idx]
-          #  prob = torch.softmax(y_pred, dim=1)[0, idx].item()
-          #  print('{:<75} ({:.2f}%)'.format(label, prob*100))
-
-          #print(preds)
-          #print(top_pred)
           if top_pred == 1:
             shutil.move(f, os.path.join(args.path0, os.path.basename(f)))
           elif top_pred == 2:
             shutil.move(f, os.path.join(args.path1, os.path.basename(f)))
-
 
 if __name__ == "__main__":
     main()
