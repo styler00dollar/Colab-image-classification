@@ -5,13 +5,16 @@ import numpy as np
 from statistics import mean
 import pytorch_lightning as pl
 import torch
-#from accuracy import calculate_accuracy
+from accuracy import calculate_accuracy
 from diffaug import DiffAugment
 #from pytorch_lightning.metrics import Accuracy
 
 class CustomTrainClass(pl.LightningModule):
   def __init__(self, model_train, num_classes, diffaug_activate, policy):
     super().__init__()
+
+
+    #############################################
     if model_train == 'efficientnet-b0':
       self.netD = EfficientNet.from_pretrained('efficientnet-b0', num_classes=num_classes)
     elif model_train == 'efficientnet-b1':
@@ -29,8 +32,153 @@ class CustomTrainClass(pl.LightningModule):
     elif model_train == 'efficientnet-b7':
       self.netD = EfficientNet.from_pretrained('efficientnet-b7', num_classes=num_classes)
 
-    #weights_init(self.netD, 'kaiming') #only use this if there is no pretrain
 
+
+    elif model_train == 'mobilenetv3_small':
+      from arch.mobilenetv3_arch import MobileNetV3
+      self.netD = MobileNetV3(n_class=num_classes, mode='small', input_size=256)
+    elif model_train == 'mobilenetv3_large':
+      from arch.mobilenetv3_arch import MobileNetV3
+      self.netD = MobileNetV3(n_class=num_classes, mode='large', input_size=256)
+
+
+
+    elif model_train == 'resnet50':
+      from arch.resnet_arch import resnet50
+      self.netD = resnet50(num_classes=num_classes, pretrain=True)
+    elif model_train == 'resnet101':
+      from arch.resnet_arch import resnet101
+      self.netD = resnet101(num_classes=num_classes, pretrain=True)
+    elif model_train == 'resnet152':
+      from arch.resnet_arch import resnet152
+      self.netD = resnet152(num_classes=num_classes, pretrain=True)
+
+    #############################################
+    elif model_train == 'ViT':
+      from vit_pytorch import ViT
+      self.netD = ViT(
+          image_size = 256,
+          patch_size = 32,
+          num_classes = num_classes,
+          dim = 1024,
+          depth = 6,
+          heads = 16,
+          mlp_dim = 2048,
+          dropout = 0.1,
+          emb_dropout = 0.1
+      )
+
+    elif model_train == 'DeepViT':
+      from vit_pytorch.deepvit import DeepViT
+      self.netD = DeepViT(
+          image_size = 256,
+          patch_size = 32,
+          num_classes = num_classes,
+          dim = 1024,
+          depth = 6,
+          heads = 16,
+          mlp_dim = 2048,
+          dropout = 0.1,
+          emb_dropout = 0.1
+      )
+
+
+    #############################################
+
+    elif model_train == 'RepVGG-A0':
+      from arch.RepVGG_arch import create_RepVGG_A0
+      self.netD = create_RepVGG_A0(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-A1':
+      from arch.RepVGG_arch import create_RepVGG_A1
+      self.netD = create_RepVGG_A1(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-A2':
+      from arch.RepVGG_arch import create_RepVGG_A2
+      self.netD = create_RepVGG_A2(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B0':
+      from arch.RepVGG_arch import create_RepVGG_B0
+      self.netD = create_RepVGG_B0(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B1':
+      from arch.RepVGG_arch import create_RepVGG_B1
+      self.netD = create_RepVGG_B1(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B1g2':
+      from arch.RepVGG_arch import create_RepVGG_B1g2
+      self.netD = create_RepVGG_B1g2(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B1g4':
+      from arch.RepVGG_arch import create_RepVGG_B1g4
+      self.netD = create_RepVGG_B1g4(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B2':
+      from arch.RepVGG_arch import create_RepVGG_B2
+      self.netD = create_RepVGG_B2(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B2g2':
+      from arch.RepVGG_arch import create_RepVGG_B2g2
+      self.netD = create_RepVGG_B2g2(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B2g4':
+      from arch.RepVGG_arch import create_RepVGG_B2g4
+      self.netD = create_RepVGG_B2g4(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B3':
+      from arch.RepVGG_arch import create_RepVGG_B3
+      self.netD = create_RepVGG_B3(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B3g2':
+      from arch.RepVGG_arch import create_RepVGG_B3g2
+      self.netD = create_RepVGG_B3g2(deploy=False, num_classes=num_classes)
+
+    elif model_train == 'RepVGG-B3g4':
+      from arch.RepVGG_arch import create_RepVGG_B3g4
+      self.netD = create_RepVGG_B3g4(deploy=False, num_classes=num_classes)
+
+    #############################################
+
+    elif model_train == 'squeezenet_1_0':
+      from arch.squeezenet_arch import SqueezeNet
+      self.netD = SqueezeNet(num_classes=num_classes, version='1_0')
+
+    elif model_train == 'squeezenet_1_1':
+      from arch.squeezenet_arch import SqueezeNet
+      self.netD = SqueezeNet(num_classes=num_classes, version='1_1')
+    #############################################
+    elif model_train == 'vgg11':
+      from arch.vgg_arch import create_vgg11
+      self.netD = create_vgg11(num_classes, pretrained=True)
+    elif model_train == 'vgg13':
+      from arch.vgg_arch import create_vgg13
+      self.netD = create_vgg13(num_classes, pretrained=True)
+    elif model_train == 'vgg16':
+      from arch.vgg_arch import create_vgg16
+      self.netD = create_vgg16(num_classes, pretrained=True)
+    elif model_train == 'vgg19':
+      from arch.vgg_arch import create_vgg19
+      self.netD = create_vgg19(num_classes, pretrained=True)
+
+    #############################################
+    elif model_train == 'SwinTransformer':
+      from swin_transformer_pytorch import SwinTransformer
+
+      self.netD = SwinTransformer(
+          hidden_dim=96,
+          layers=(2, 2, 6, 2),
+          heads=(3, 6, 12, 24),
+          channels=3,
+          num_classes=num_classes,
+          head_dim=32,
+          window_size=8,
+          downscaling_factors=(4, 2, 2, 2),
+          relative_pos_embedding=True
+      )
+
+
+    #weights_init(self.netD, 'kaiming') #only use this if there is no pretrain
+    self.model_train = model_train
     self.criterion = torch.nn.CrossEntropyLoss()
 
     self.accuracy = []
