@@ -5,12 +5,12 @@ import numpy as np
 from statistics import mean
 import pytorch_lightning as pl
 import torch
-from accuracy import calculate_accuracy
+from accuracy import calculate_accuracy, calc_accuracy_gridmix
 from diffaug import DiffAugment
 #from pytorch_lightning.metrics import Accuracy
 
 class CustomTrainClass(pl.LightningModule):
-  def __init__(self, model_train, num_classes, diffaug_activate, policy):
+  def __init__(self, model_train, num_classes, diffaug_activate, policy, aug):
     super().__init__()
 
 
@@ -179,7 +179,32 @@ class CustomTrainClass(pl.LightningModule):
 
     #weights_init(self.netD, 'kaiming') #only use this if there is no pretrain
     self.model_train = model_train
-    self.criterion = torch.nn.CrossEntropyLoss()
+
+
+    if aug == 'gridmix':
+      from GridMixupLoss import GridMixupLoss
+      self.criterion = GridMixupLoss(
+        alpha=(0.4, 0.7),
+        hole_aspect_ratio=1.,
+        crop_area_ratio=(0.5, 1),
+        crop_aspect_ratio=(0.5, 2),
+        n_holes_x=(2, 6)
+      )
+    elif aug == 'cutmix':
+      from cutmix import cutmix
+      self.criterion = cutmix(
+        alpha=(0.4, 0.7),
+        hole_aspect_ratio=1.,
+        crop_area_ratio=(0.5, 1),
+        crop_aspect_ratio=(0.5, 2),
+        n_holes_x=(2, 6)
+      )
+    elif aug == 'centerloss':
+      from centerloss import CenterLoss
+      self.criterion = CenterLoss(num_classes=num_classes, feat_dim=2, use_gpu=True)
+    else:
+      self.criterion = torch.nn.CrossEntropyLoss()
+    self.aug = aug
 
     self.accuracy = []
     self.losses = []
@@ -190,6 +215,11 @@ class CustomTrainClass(pl.LightningModule):
     self.policy = policy
 
   def training_step(self, train_batch, batch_idx):
+    if self.aug == 'gridmix' or self.aug == 'cutmix':
+      train_batch[0], train_batch[1] = self.criterion.get_sample(images=train_batch[0], targets=train_batch[1].unsqueeze(-1))
+    #elif self.aug == 'cutmix':
+    #  train_batch[0], train_batch[1] = cutmix(train_batch[0], train_batch[1].unsqueeze(-1), 1)
+
     if self.diffaug_activate == False:
       preds = self.netD(train_batch[0])
     else:
@@ -198,7 +228,11 @@ class CustomTrainClass(pl.LightningModule):
     # Calculate loss
     loss = self.criterion(preds, train_batch[1])
 
-    self.accuracy.append(calculate_accuracy(preds, train_batch[1]))
+    if self.aug == None or self.aug == 'centerloss':
+      self.accuracy.append(calculate_accuracy(preds, train_batch[1]))
+    else:
+      self.accuracy.append(calc_accuracy_gridmix(preds, train_batch[1]))
+
     self.losses.append(loss.item())
     return loss
 
@@ -211,7 +245,12 @@ class CustomTrainClass(pl.LightningModule):
   def training_epoch_end(self, training_step_outputs):
       loss_mean = np.mean(self.losses)
       #accuracy_mean = torch.mean(self.accuracy)
-      accuracy_mean = torch.mean(torch.stack(self.accuracy))
+
+      if self.aug == None or self.aug == 'centerloss':
+        accuracy_mean = torch.mean(torch.stack(self.accuracy))
+      else:
+        accuracy_mean = np.mean(self.accuracy)
+
       accuracy_mean = mean(self.accuracy_val)
 
       print(f"'Epoch': {self.current_epoch}, 'loss': {loss_mean:.2f}, 'accuracy': {accuracy_mean:.2f}")
@@ -228,9 +267,12 @@ class CustomTrainClass(pl.LightningModule):
   def validation_step(self, train_batch, train_idx):
       preds = self.netD(train_batch[0])
 
-      loss = self.criterion(preds, train_batch[1])
+      if self.aug == None or self.aug == 'centerloss':
+        loss = self.criterion(preds, train_batch[1])
+        self.losses_val.append(loss.item())
+
+
       self.accuracy_val.append(calculate_accuracy(preds, train_batch[1]).item())
-      self.losses_val.append(loss.item())
 
   def validation_epoch_end(self, val_step_outputs):
       loss_mean = np.mean(self.losses_val)
