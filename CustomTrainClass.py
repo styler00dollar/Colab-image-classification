@@ -251,8 +251,6 @@ class CustomTrainClass(pl.LightningModule):
       else:
         accuracy_mean = np.mean(self.accuracy)
 
-      accuracy_mean = mean(self.accuracy_val)
-
       print(f"'Epoch': {self.current_epoch}, 'loss': {loss_mean:.2f}, 'accuracy': {accuracy_mean:.2f}")
 
       # logging
