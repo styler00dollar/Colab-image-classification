@@ -8,6 +8,11 @@ import os
 from tqdm import tqdm
 import numpy as np
 import argparse
+import PIL
+from PIL import Image
+
+resize_method = 'PIL' #@param ["OpenCV", "PIL"] {allow-input: false}
+
 
 def main():
     # options
@@ -55,7 +60,7 @@ def main():
     files_jpg = glob.glob(args.data_input_path + '/**/*.jpg', recursive=True)
     files.extend(files_jpg)
 
-    model.half()
+    #model.half()
     model.to(device)
     model.eval()
 
@@ -65,6 +70,7 @@ def main():
     with torch.no_grad():
       for f in tqdm(files):
           image = cv2.imread(f)
+          """
           image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
           # resizing to match original training, or detections will be bad
@@ -92,8 +98,19 @@ def main():
                   scale = args.height_min/height
                   width_resized = width*scale
                   image = cv2.resize(image, (round(width_resized), round(height_resized)))
+          """
+          #####################################
+          if resize_method == "OpenCV":
+              resized = cv2.resize(image, (args.height_min,args.width_min), interpolation=cv2.INTER_AREA)
 
-          image = torch.from_numpy(image).unsqueeze(0).permute(0,3,1,2)/255
+          # resize with PIL
+          elif resize_method == "PIL":
+            image = Image.fromarray(image)
+            image = image.resize((args.height_min,args.width_min))
+            resized = np.asarray(image)
+          #####################################
+
+          image = torch.from_numpy(resized).unsqueeze(0).permute(0,3,1,2)/255
 
           image=image.to(device)
           if device == 'cuda':
@@ -104,9 +121,10 @@ def main():
           y_prob = torch.softmax(y_pred, dim=1)
           top_pred = y_prob.argmax(1, keepdim = True)
 
-          if top_pred == 1:
+
+          if top_pred == 0:
             shutil.move(f, os.path.join(args.path0, os.path.basename(f)))
-          elif top_pred == 2:
+          elif top_pred == 1:
             shutil.move(f, os.path.join(args.path1, os.path.basename(f)))
 
 if __name__ == "__main__":
