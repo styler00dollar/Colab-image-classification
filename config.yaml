@@ -1,0 +1,34 @@
+training_path: '/content/data/' # input folder
+validation_path: '/content/data/' # validation folder
+test_path: '/content/data/' # validation folder / test.py
+default_root_dir: '/content/'
+means: [0.7000, 0.6413, 0.6352]
+std: [0.2529, 0.2519, 0.2450]
+batch_size
+aug: 'cutmix' # gridmix, cutmix, CenterLoss, None
+size: 256 # image size
+
+# which model architecture to train
+
+# efficientnet-b0 up to efficientnet-b8
+# mobilenetv3_small / mobilenetv3_large
+# resnet50 / resnet101 / resnet152
+# ViT / DeepViT
+# RepVGG-A0, RepVGG-A1, RepVGG-A2, RepVGG-B0, RepVGG-B1, RepVGG-B1g2, RepVGG-B1g4, RepVGG-B2, RepVGG-B2g2, RepVGG-B2g4, RepVGG-B3, RepVGG-B3g2, RepVGG-B3g4
+# squeezenet_1_0 / squeezenet_1_1
+# vgg11, vgg13, vgg16, vgg19
+# SwinTransformer
+model_train: 'efficientnet-b0'
+
+num_classes: 3 # Warning: Some do require amount classes + 1 as num_classes. 
+diffaug_activate: False
+policy: 'color,translation' # [color,translation,cutout]
+num_workers: 4
+
+
+# args for sort.py / test.py (only supports efficientnet)
+resize_method: PIL # PIL | OpenCV
+model_path: '/content/model.pth'
+path0: '/content/0'
+path1: '/content/1'
+precision: 16 # 32
