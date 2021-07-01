@@ -18,6 +18,13 @@ size: 256 # image size
 # squeezenet_1_0 / squeezenet_1_1
 # vgg11, vgg13, vgg16, vgg19
 # SwinTransformer
+
+# timm
+# pip install timm
+# you can loop up models here: https://rwightman.github.io/pytorch-image-models/
+# Example: "tf_efficientnetv2_s"
+timm: True
+
 model_train: 'efficientnet-b0'
 
 num_classes: 3 # Warning: Some do require amount classes + 1 as num_classes. 

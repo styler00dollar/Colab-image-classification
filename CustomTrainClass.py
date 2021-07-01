@@ -10,7 +10,7 @@ from diffaug import DiffAugment
 #from pytorch_lightning.metrics import Accuracy
 
 class CustomTrainClass(pl.LightningModule):
-  def __init__(self, model_train, num_classes, diffaug_activate, policy, aug):
+  def __init__(self, model_train, num_classes, diffaug_activate, policy, aug, timm):
     super().__init__()
 
 
@@ -176,6 +176,9 @@ class CustomTrainClass(pl.LightningModule):
           relative_pos_embedding=True
       )
 
+    if timm == True:
+      import timm
+      self.netD = timm.create_model(model_train, num_classes=num_classes, pretrained=True)
 
     #weights_init(self.netD, 'kaiming') #only use this if there is no pretrain
     self.model_train = model_train
