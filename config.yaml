@@ -1,12 +1,31 @@
-training_path: '/content/data/' # input folder
-validation_path: '/content/data/' # validation folder
-test_path: '/content/data/' # validation folder / test.py
-default_root_dir: '/content/'
+print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
+use_amp: True
+gpus: 1
+checkpoint_path:
+use_swa: False
+save_step_frequency: 50000
+
+# calculate these with means_stds.py!
 means: [0.7000, 0.6413, 0.6352]
 std: [0.2529, 0.2519, 0.2450]
-batch_size
-aug: 'cutmix' # gridmix, cutmix, CenterLoss, None
+
+batch_size: 1
+aug: # gridmix, cutmix, CenterLoss, None
 size: 256 # image size
+precision: 32 # 32
+max_epochs: 9999
+progress_bar_refresh_rate: 20
+default_root_dir: '/content/'
+
+path:
+  # pretrain
+  checkpoint_path:
+
+  training_path: '/content/data/' # input folder
+  validation_path: '/content/data/' # validation folder
+  test_path: '/content/data/' # validation folder / test.py
+  log_path: '/content/logs/'
+  checkpoint_save_path: '/content/'
 
 # which model architecture to train
 
@@ -25,17 +44,17 @@ size: 256 # image size
 # Example: "tf_efficientnetv2_s"
 timm: True
 
-model_train: 'efficientnet-b0'
+model_train: 'tf_efficientnetv2_b0'
 
 num_classes: 3 # Warning: Some do require amount classes + 1 as num_classes. 
 diffaug_activate: False
 policy: 'color,translation' # [color,translation,cutout]
 num_workers: 4
 
-
+################################################################
+# inference
 # args for sort.py / test.py (only supports efficientnet)
 resize_method: PIL # PIL | OpenCV
 model_path: '/content/model.pth'
 path0: '/content/0'
 path1: '/content/1'
-precision: 16 # 32

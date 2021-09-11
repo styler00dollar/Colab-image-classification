@@ -7,7 +7,12 @@ import pytorch_lightning as pl
 import torch
 from accuracy import calculate_accuracy, calc_accuracy_gridmix
 from diffaug import DiffAugment
-#from pytorch_lightning.metrics import Accuracy
+import yaml
+with open("config.yaml", "r") as ymlfile:
+    cfg = yaml.safe_load(ymlfile)
+
+from tensorboardX import SummaryWriter
+writer = SummaryWriter(logdir=cfg['path']['log_path'])
 
 class CustomTrainClass(pl.LightningModule):
   def __init__(self, model_train, num_classes, diffaug_activate, policy, aug, timm):
@@ -230,13 +235,17 @@ class CustomTrainClass(pl.LightningModule):
 
     # Calculate loss
     loss = self.criterion(preds, train_batch[1])
+    writer.add_scalar('loss', loss, self.trainer.global_step)
 
-    if self.aug == None or self.aug == 'centerloss':
-      self.accuracy.append(calculate_accuracy(preds, train_batch[1]))
-    else:
-      self.accuracy.append(calc_accuracy_gridmix(preds, train_batch[1]))
+    if cfg['print_training_epoch_end_metrics'] == False:
+      if self.aug == None or self.aug == 'centerloss':
+        acc = calculate_accuracy(preds, train_batch[1])
+      else:
+        acc = calc_accuracy_gridmix(preds, train_batch[1])
+      writer.add_scalar('acc', acc, self.trainer.global_step)
+      self.accuracy.append(acc)
+      self.losses.append(loss.item())
 
-    self.losses.append(loss.item())
     return loss
 
   def configure_optimizers(self):
@@ -246,22 +255,23 @@ class CustomTrainClass(pl.LightningModule):
       return optimizer
 
   def training_epoch_end(self, training_step_outputs):
-      loss_mean = np.mean(self.losses)
-      #accuracy_mean = torch.mean(self.accuracy)
+      if cfg['print_training_epoch_end_metrics'] == False:
+        loss_mean = np.mean(self.losses)
+        #accuracy_mean = torch.mean(self.accuracy)
 
-      if self.aug == None or self.aug == 'centerloss':
-        accuracy_mean = torch.mean(torch.stack(self.accuracy))
-      else:
-        accuracy_mean = np.mean(self.accuracy)
+        if self.aug == None or self.aug == 'centerloss':
+          accuracy_mean = torch.mean(torch.stack(self.accuracy))
+        else:
+          accuracy_mean = np.mean(self.accuracy)
 
-      print(f"'Epoch': {self.current_epoch}, 'loss': {loss_mean:.2f}, 'accuracy': {accuracy_mean:.2f}")
+        print(f"'Epoch': {self.current_epoch}, 'loss': {loss_mean:.2f}, 'accuracy': {accuracy_mean:.2f}")
 
-      # logging
-      self.log('train/loss_mean', loss_mean, prog_bar=True, logger=True, on_epoch=True)
-      self.log('train/accuracy_mean', accuracy_mean, prog_bar=True, logger=True, on_epoch=True)
+        # logging
+        #self.log('train/loss_mean', loss_mean, prog_bar=True, logger=True, on_epoch=True)
+        #self.log('train/accuracy_mean', accuracy_mean, prog_bar=True, logger=True, on_epoch=True)
 
-      self.losses = []
-      self.accuracy = []
+        self.losses = []
+        self.accuracy = []
 
       torch.save(self.netD.state_dict(), f"Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth")
 
@@ -272,19 +282,20 @@ class CustomTrainClass(pl.LightningModule):
         loss = self.criterion(preds, train_batch[1])
         self.losses_val.append(loss.item())
 
-
       self.accuracy_val.append(calculate_accuracy(preds, train_batch[1]).item())
 
   def validation_epoch_end(self, val_step_outputs):
       loss_mean = np.mean(self.losses_val)
       accuracy_mean = mean(self.accuracy_val)
 
-      print(f"'Epoch': {self.current_epoch}, 'loss_val': {loss_mean:.2f}, 'accuracy_val': {accuracy_mean:.2f}")
-      print("----------------------------------------------------------")
+      #print(f"'Epoch': {self.current_epoch}, 'loss_val': {loss_mean:.2f}, 'accuracy_val': {accuracy_mean:.2f}")
+      #print("----------------------------------------------------------")
 
       # logging
-      self.log('val/loss_mean', loss_mean, prog_bar=True, logger=True, on_epoch=True)
-      self.log('val/accuracy_mean', accuracy_mean, prog_bar=True, logger=True, on_epoch=True)
+      #self.log('val/loss_mean', loss_mean, prog_bar=True, logger=True, on_epoch=True)
+      #self.log('val/accuracy_mean', accuracy_mean, prog_bar=True, logger=True, on_epoch=True)
+      writer.add_scalar('val/loss_mean', loss_mean, self.trainer.global_step)
+      writer.add_scalar('val/accuracy_mean', accuracy_mean, self.trainer.global_step)
 
   def test_step(self, train_batch, train_idx):
       preds = self.netD(train_batch[0])
