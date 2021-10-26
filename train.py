@@ -17,6 +17,11 @@ def main():
     if cfg['use_amp'] == True:
       trainer = pl.Trainer(num_sanity_val_steps=0, stochastic_weight_avg=cfg['use_swa'], log_every_n_steps=50, resume_from_checkpoint=cfg['path']['checkpoint_path'], check_val_every_n_epoch=9999999, logger=None, gpus=cfg['gpus'], precision=16, amp_level='O1', max_epochs=cfg['max_epochs'], progress_bar_refresh_rate=cfg['progress_bar_refresh_rate'], default_root_dir=cfg['default_root_dir'], callbacks=[CheckpointEveryNSteps(save_step_frequency=cfg['save_step_frequency'], save_path=cfg['path']['checkpoint_save_path'])])
 
+    if cfg['path']['pretrain']:
+        import torch
+        model.netD.load_state_dict(torch.load(cfg['path']['pretrain']), strict=False)
+        print("Pretrain pth loaded!")
+    
     #############################################
     # Loading a Model
     #############################################
