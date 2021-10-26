@@ -1,6 +1,6 @@
 print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
 use_amp: False
-gpus: 1
+gpus: 0
 use_swa: False
 save_step_frequency: 25000
 
@@ -8,30 +8,31 @@ save_step_frequency: 25000
 means: [0.7032, 0.6346, 0.6234]
 std: [0.2520, 0.2507, 0.2417]
 
+optimizer: MADGRAD # Adam | AdamP | SGDP | MADGRAD (pip install madgrad)
 lr: 0.0001
-batch_size: 8
+batch_size: 6
 aug: # gridmix, cutmix, CenterLoss, None
-size: 512 # image size
+size: 256 # image size
 precision: 32 # 32
 max_epochs: 9999
 progress_bar_refresh_rate: 20
-default_root_dir: '/experiment2/'
+default_root_dir: '/home/Downloads/123/TEST/'
 
 path:
   # pretrain
-  pretrain: "Checkpoint_1_913435_loss_0.223359_acc_0.914601_D.pth"
+  pretrain: 
   checkpoint_path: 
 
-  training_path: '/dataset/' # input folder
-  validation_path: '/val_png/' # validation folder
-  test_path: '/val_png/' # validation folder / test.py
-  log_path: '/experiment2/logs/'
-  checkpoint_save_path: '/experiment2/'
+  training_path: '/home/Downloads/123/TEST/data' # input folder
+  validation_path: '/home/Downloads/123/TEST/data' # validation folder
+  test_path: '/home/Downloads/123/TEST/data' # validation folder / test.py
+  log_path: '/home/Downloads/123/TEST/'
+  checkpoint_save_path: '/home/Downloads/123/TEST/'
 
 
 # which model architecture to train
 
-# efficientnet-b0 up to efficientnet-b8
+# efficientnet-b0 up to efficientnet-b8 (pip install efficientnet_pytorch)
 # mobilenetv3_small / mobilenetv3_large
 # resnet50 / resnet101 / resnet152
 # ViT / DeepViT
@@ -44,9 +45,34 @@ path:
 # pip install timm
 # you can loop up models here: https://rwightman.github.io/pytorch-image-models/
 # Example: "tf_efficientnetv2_s"
-timm: True
+timm: False
 
-model_train: 'tf_efficientnetv2_b0'
+#model_train: 'tf_efficientnetv2_b0'
+
+#################
+
+# other models with configurable parameters
+#model_train: effV2
+#conv: fft # fft | conv2d
+#model_size: s # s | m | l | xl
+
+# x-transformers
+# pip install x-transformers
+#model_train: x_transformers
+#image_size: 512
+#patch_size: 32
+#dim: 512
+#depth: 6
+#heads: 8
+
+# Warning: only 256px input
+#model_train: mobilevit
+#model_size: xxs # xxs | xs | s
+
+# because of too many parameters, a seperate config file named "hrt_config.py" is available
+model_train: hrt
+
+#################
 
 num_classes: 3 # Warning: Some do require amount classes + 1 as num_classes. 
 diffaug_activate: False

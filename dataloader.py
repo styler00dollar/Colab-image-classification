@@ -20,8 +20,8 @@ class DataModule(pl.LightningDataModule):
         img_tf = transforms.Compose([
             transforms.Resize(size=self.size),
             transforms.RandomRotation(5),
-            #transforms.CenterCrop(size=self.size),
-            transforms.RandomCrop(self.size),
+            transforms.CenterCrop(size=self.size),
+            #transforms.RandomCrop(self.size),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(mean = self.means,

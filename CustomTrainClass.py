@@ -15,7 +15,7 @@ from tensorboardX import SummaryWriter
 writer = SummaryWriter(logdir=cfg['path']['log_path'])
 
 class CustomTrainClass(pl.LightningModule):
-  def __init__(self, model_train='tf_efficientnetv2_b0', num_classes=3, diffaug_activate=False, policy='color,translation', aug=None, timm=True):
+  def __init__(self, model_train='tf_efficientnetv2_b0', num_classes=3, diffaug_activate=False, policy='color,translation', aug=None, timm=False):
     super().__init__()
 
 
@@ -181,12 +181,55 @@ class CustomTrainClass(pl.LightningModule):
           relative_pos_embedding=True
       )
 
+    elif model_train == 'effV2':
+      if cfg['size'] == "s":
+        from arch.efficientnetV2_arch import effnetv2_s
+        self.netD = effnetv2_s(num_classes=num_classes)
+      elif cfg['size'] == "m":
+        from arch.efficientnetV2_arch import effnetv2_m
+        self.netD = effnetv2_m(num_classes=num_classes)
+      elif cfg['size'] == "l":
+        from arch.efficientnetV2_arch import effnetv2_l
+        self.netD = effnetv2_l(num_classes=num_classes)
+      elif cfg['size'] == "xl":
+        from arch.efficientnetV2_arch import effnetv2_xl
+        self.netD = effnetv2_xl(num_classes=num_classes)
+
+
+
+    elif model_train == 'x_transformers':
+      from x_transformers import ViTransformerWrapper, Encoder
+      self.netD = ViTransformerWrapper(
+          image_size = cfg['image_size'],
+          patch_size = cfg['patch_size'],
+          num_classes = num_classes,
+          attn_layers = Encoder(
+              dim = cfg['dim'],
+              depth = cfg['depth'],
+              heads = cfg['heads'],
+          )
+      )
+
+    elif model_train == 'mobilevit':
+      if cfg['model_size'] == "xxs":
+        from arch.mobilevit_arch import mobilevit_xxs
+        self.netD = mobilevit_xxs(size = cfg['size'])
+      elif cfg['model_size'] == "xs":
+        from arch.mobilevit_arch import mobilevit_xs
+        self.netD = mobilevit_xs(size = cfg['size'])
+      elif cfg['model_size'] == "x":
+        from arch.mobilevit_arch import mobilevit_s
+        self.netD = mobilevit_s(size = cfg['size'])
+
+    elif model_train == 'hrt':
+      from arch.hrt_arch import HighResolutionTransformer
+      self.netD = HighResolutionTransformer(num_classes)
+
     if timm == True:
       import timm
       self.netD = timm.create_model(model_train, num_classes=num_classes, pretrained=True)
 
     #weights_init(self.netD, 'kaiming') #only use this if there is no pretrain
-    self.model_train = model_train
 
 
     if aug == 'gridmix':
@@ -255,9 +298,15 @@ class CustomTrainClass(pl.LightningModule):
     return loss
 
   def configure_optimizers(self):
-      #optimizer = torch.optim.Adam(self.netD.parameters(), lr=2e-3)
-      optimizer = AdamP(self.netD.parameters(), lr=cfg['lr'], betas=(0.9, 0.999), weight_decay=1e-2)
-      #optimizer = SGDP(self.netD.parameters(), lr=0.1, weight_decay=1e-5, momentum=0.9, nesterov=True)
+      if cfg['optimizer'] == "Adam":
+        optimizer = torch.optim.Adam(self.netD.parameters(), lr=cfg['lr'])
+      elif cfg['optimizer'] == "AdamP":
+        optimizer = AdamP(self.netD.parameters(), lr=cfg['lr'], betas=(0.9, 0.999), weight_decay=1e-2)
+      elif cfg['optimizer'] == "SGDP":
+        optimizer = SGDP(self.netD.parameters(), lr=cfg['lr'], weight_decay=1e-5, momentum=0.9, nesterov=True)
+      elif cfg['optimizer'] == "MADGRAD":
+        from madgrad import MADGRAD
+        optimizer = MADGRAD(self.netD.parameters(), lr=cfg['lr'], momentum=0.9, weight_decay=0.01, eps=1e-6)
       return optimizer
 
   def training_epoch_end(self, training_step_outputs):
