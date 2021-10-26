@@ -52,16 +52,11 @@ class CheckpointEveryNSteps(pl.Callback):
             torch.save(trainer.model.netD.state_dict(), os.path.join(cfg['path']['checkpoint_save_path'], f"{self.prefix}_{epoch}_{global_step}.pth"))
 
             # run validation once checkpoint was made
-            trainer.run_evaluation()
+            trainer._run_evaluate()
 
-    #def on_epoch_end(self, trainer: pl.Trainer, _):
-    #    print("Epoch completed.")
-
-    def on_train_end(self, trainer, pl_module):
+    def on_keyboard_interrupt(self, trainer, pl_module):
         epoch = trainer.current_epoch
         global_step = trainer.global_step
         ckpt_path = os.path.join(self.save_path, f"{self.prefix}_{epoch}_{global_step}.ckpt")
         trainer.save_checkpoint(ckpt_path)
         torch.save(trainer.model.netD.state_dict(), os.path.join(cfg['path']['checkpoint_save_path'], f"{self.prefix}_{epoch}_{global_step}.pth"))
-
-#Trainer(callbacks=[CheckpointEveryNSteps()])

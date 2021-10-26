@@ -1,30 +1,33 @@
 print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
-use_amp: True
+use_amp: False
 gpus: 1
 use_swa: False
-save_step_frequency: 50000
+save_step_frequency: 25000
 
 # calculate these with means_stds.py!
-means: [0.7000, 0.6413, 0.6352]
-std: [0.2529, 0.2519, 0.2450]
+means: [0.7032, 0.6346, 0.6234]
+std: [0.2520, 0.2507, 0.2417]
 
-batch_size: 1
+lr: 0.0001
+batch_size: 8
 aug: # gridmix, cutmix, CenterLoss, None
-size: 256 # image size
+size: 512 # image size
 precision: 32 # 32
 max_epochs: 9999
 progress_bar_refresh_rate: 20
-default_root_dir: '/content/'
+default_root_dir: '/experiment2/'
 
 path:
   # pretrain
-  checkpoint_path:
+  pretrain: "Checkpoint_1_913435_loss_0.223359_acc_0.914601_D.pth"
+  checkpoint_path: 
 
-  training_path: '/content/data/' # input folder
-  validation_path: '/content/data/' # validation folder
-  test_path: '/content/data/' # validation folder / test.py
-  log_path: '/content/logs/'
-  checkpoint_save_path: '/content/'
+  training_path: '/dataset/' # input folder
+  validation_path: '/val_png/' # validation folder
+  test_path: '/val_png/' # validation folder / test.py
+  log_path: '/experiment2/logs/'
+  checkpoint_save_path: '/experiment2/'
+
 
 # which model architecture to train
 
@@ -48,7 +51,7 @@ model_train: 'tf_efficientnetv2_b0'
 num_classes: 3 # Warning: Some do require amount classes + 1 as num_classes. 
 diffaug_activate: False
 policy: 'color,translation' # [color,translation,cutout]
-num_workers: 4
+num_workers: 12
 
 ################################################################
 # inference

@@ -15,7 +15,7 @@ from tensorboardX import SummaryWriter
 writer = SummaryWriter(logdir=cfg['path']['log_path'])
 
 class CustomTrainClass(pl.LightningModule):
-  def __init__(self, model_train, num_classes, diffaug_activate, policy, aug, timm):
+  def __init__(self, model_train='tf_efficientnetv2_b0', num_classes=3, diffaug_activate=False, policy='color,translation', aug=None, timm=True):
     super().__init__()
 
 
@@ -221,8 +221,14 @@ class CustomTrainClass(pl.LightningModule):
     self.losses_val = []
 
     self.policy = policy
-
+    self.iter_check = 0
   def training_step(self, train_batch, batch_idx):
+    if self.trainer.global_step != 0:
+      if self.iter_check == self.trainer.global_step:
+        self.trainer.global_step += 1
+      self.iter_check = self.trainer.global_step
+
+
     if self.aug == 'gridmix' or self.aug == 'cutmix':
       train_batch[0], train_batch[1] = self.criterion.get_sample(images=train_batch[0], targets=train_batch[1].unsqueeze(-1))
     #elif self.aug == 'cutmix':
@@ -250,7 +256,7 @@ class CustomTrainClass(pl.LightningModule):
 
   def configure_optimizers(self):
       #optimizer = torch.optim.Adam(self.netD.parameters(), lr=2e-3)
-      optimizer = AdamP(self.netD.parameters(), lr=2e-4, betas=(0.9, 0.999), weight_decay=1e-2)
+      optimizer = AdamP(self.netD.parameters(), lr=cfg['lr'], betas=(0.9, 0.999), weight_decay=1e-2)
       #optimizer = SGDP(self.netD.parameters(), lr=0.1, weight_decay=1e-5, momentum=0.9, nesterov=True)
       return optimizer
 
