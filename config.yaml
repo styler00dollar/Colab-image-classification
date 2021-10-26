@@ -69,7 +69,7 @@ timm: False
 #model_train: mobilevit
 #model_size: xxs # xxs | xs | s
 
-# because of too many parameters, a seperate config file named "hrt_config.py" is available
+# because of too many parameters, a seperate config file named "hrt_config.yaml" is available
 model_train: hrt
 
 #################
