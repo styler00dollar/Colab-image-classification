@@ -209,17 +209,17 @@ class CustomTrainClass(pl.LightningModule):
               heads = cfg['heads'],
           )
       )
-
+        
     elif model_train == 'mobilevit':
       if cfg['model_size'] == "xxs":
         from arch.mobilevit_arch import mobilevit_xxs
-        self.netD = mobilevit_xxs(size = cfg['size'])
+        self.netD = mobilevit_xxs(num_classes = cfg['batch_size'])
       elif cfg['model_size'] == "xs":
         from arch.mobilevit_arch import mobilevit_xs
-        self.netD = mobilevit_xs(size = cfg['size'])
+        self.netD = mobilevit_xs(num_classes = cfg['batch_size'])
       elif cfg['model_size'] == "x":
         from arch.mobilevit_arch import mobilevit_s
-        self.netD = mobilevit_s(size = cfg['size'])
+        self.netD = mobilevit_s(num_classes = cfg['batch_size'])
 
     elif model_train == 'hrt':
       from arch.hrt_arch import HighResolutionTransformer
