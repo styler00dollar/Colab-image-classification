@@ -50,13 +50,13 @@ class CustomTrainClass(pl.LightningModule):
 
     elif model_train == 'resnet50':
       from arch.resnet_arch import resnet50
-      self.netD = resnet50(num_classes=num_classes, pretrain=True)
+      self.netD = resnet50(num_classes=num_classes, pretrain=cfg['pretrain'])
     elif model_train == 'resnet101':
       from arch.resnet_arch import resnet101
-      self.netD = resnet101(num_classes=num_classes, pretrain=True)
+      self.netD = resnet101(num_classes=num_classes, pretrain=cfg['pretrain'])
     elif model_train == 'resnet152':
       from arch.resnet_arch import resnet152
-      self.netD = resnet152(num_classes=num_classes, pretrain=True)
+      self.netD = resnet152(num_classes=num_classes, pretrain=cfg['pretrain'])
 
     #############################################
     elif model_train == 'ViT':
@@ -154,16 +154,16 @@ class CustomTrainClass(pl.LightningModule):
     #############################################
     elif model_train == 'vgg11':
       from arch.vgg_arch import create_vgg11
-      self.netD = create_vgg11(num_classes, pretrained=True)
+      self.netD = create_vgg11(num_classes, pretrained=cfg['pretrain'])
     elif model_train == 'vgg13':
       from arch.vgg_arch import create_vgg13
-      self.netD = create_vgg13(num_classes, pretrained=True)
+      self.netD = create_vgg13(num_classes, pretrained=cfg['pretrain'])
     elif model_train == 'vgg16':
       from arch.vgg_arch import create_vgg16
-      self.netD = create_vgg16(num_classes, pretrained=True)
+      self.netD = create_vgg16(num_classes, pretrained=cfg['pretrain'])
     elif model_train == 'vgg19':
       from arch.vgg_arch import create_vgg19
-      self.netD = create_vgg19(num_classes, pretrained=True)
+      self.netD = create_vgg19(num_classes, pretrained=cfg['pretrain'])
 
     #############################################
     elif model_train == 'SwinTransformer':
@@ -213,17 +213,81 @@ class CustomTrainClass(pl.LightningModule):
     elif model_train == 'mobilevit':
       if cfg['model_size'] == "xxs":
         from arch.mobilevit_arch import mobilevit_xxs
-        self.netD = mobilevit_xxs(num_classes = cfg['batch_size'])
+        self.netD = mobilevit_xxs(num_classes=num_classes)
       elif cfg['model_size'] == "xs":
         from arch.mobilevit_arch import mobilevit_xs
-        self.netD = mobilevit_xs(num_classes = cfg['batch_size'])
+        self.netD = mobilevit_xs(num_classes=num_classes)
       elif cfg['model_size'] == "x":
         from arch.mobilevit_arch import mobilevit_s
-        self.netD = mobilevit_s(num_classes = cfg['batch_size'])
+        self.netD = mobilevit_s(num_classes=num_classes)
 
     elif model_train == 'hrt':
       from arch.hrt_arch import HighResolutionTransformer
       self.netD = HighResolutionTransformer(num_classes)
+
+    elif model_train == 'volo':
+      if cfg['model_size'] == "volo_d1":
+        from arch.volo_arch import volo_d1
+        self.netD = volo_d1(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "volo_d2":
+        from arch.volo_arch import volo_d2
+        self.netD = volo_d2(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "volo_d3":
+        from arch.volo_arch import volo_d3
+        self.netD = volo_d3(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "volo_d4":
+        from arch.volo_arch import volo_d4
+        self.netD = volo_d4(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "volo_d5":
+        from arch.volo_arch import volo_d5
+        self.netD = volo_d5(pretrained=cfg['pretrain'], num_classes=num_classes)
+
+    elif model_train == 'pvt_v2':
+      if cfg['model_size'] == "pvt_v2_b0":
+        from arch.pvt_v2_arch import pvt_v2_b0
+        self.netD = pvt_v2_b0(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "pvt_v2_b1":
+        from arch.pvt_v2_arch import pvt_v2_b1
+        self.netD = pvt_v2_b1(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "pvt_v2_b2":
+        from arch.pvt_v2_arch import pvt_v2_b2
+        self.netD = pvt_v2_b2(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "pvt_v2_b3":
+        from arch.pvt_v2_arch import pvt_v2_b3
+        self.netD = pvt_v2_b3(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "pvt_v2_b4":
+        from arch.pvt_v2_arch import pvt_v2_b4
+        self.netD = pvt_v2_b4(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "pvt_v2_b5":
+        from arch.pvt_v2_arch import pvt_v2_b5
+        self.netD = pvt_v2_b5(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "pvt_v2_b2_li":
+        from arch.pvt_v2_arch import pvt_v2_b2_li
+        self.netD = pvt_v2_b2_li(pretrained=cfg['pretrain'], num_classes=num_classes)
+
+    elif model_train == 'ConvMLP':
+      if cfg['model_size'] == "convmlp_s":
+        from arch.ConvMLP_arch import convmlp_s
+        self.netD = convmlp_s(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "convmlp_m":
+        from arch.ConvMLP_arch import convmlp_m
+        self.netD = convmlp_m(pretrained=cfg['pretrain'], num_classes=num_classes)
+      elif cfg['model_size'] == "convmlp_l":
+        from arch.ConvMLP_arch import convmlp_l
+        self.netD = convmlp_l(pretrained=cfg['pretrain'], num_classes=num_classes)
+
+    elif model_train == 'FocalTransformer':
+      from arch.focal_transformer_arch import FocalTransformer
+      self.netD = FocalTransformer(num_classes=num_classes)
+
+    elif model_train == 'mobile_former':
+      from arch.mobile_former_arch import MobileFormer, config_52, config_294, config_508
+      if cfg['model_size'] == "config_52":
+        self.netD = MobileFormer(config_52)
+      elif cfg['model_size'] == "config_294":
+        self.netD = MobileFormer(config_294)
+      elif cfg['model_size'] == "config_508":
+        self.netD = MobileFormer(config_508)
 
     if timm == True:
       import timm
@@ -276,6 +340,7 @@ class CustomTrainClass(pl.LightningModule):
       train_batch[0], train_batch[1] = self.criterion.get_sample(images=train_batch[0], targets=train_batch[1].unsqueeze(-1))
     #elif self.aug == 'cutmix':
     #  train_batch[0], train_batch[1] = cutmix(train_batch[0], train_batch[1].unsqueeze(-1), 1)
+    #print(train_batch[0].shape)
 
     if self.diffaug_activate == False:
       preds = self.netD(train_batch[0])
@@ -283,6 +348,7 @@ class CustomTrainClass(pl.LightningModule):
       preds = self.netD(DiffAugment(train_batch[0], policy=self.policy))
 
     # Calculate loss
+    #print(preds.shape, train_batch[1].shape)
     loss = self.criterion(preds, train_batch[1])
     writer.add_scalar('loss', loss, self.trainer.global_step)
 
@@ -331,6 +397,7 @@ class CustomTrainClass(pl.LightningModule):
       torch.save(self.netD.state_dict(), f"Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth")
 
   def validation_step(self, train_batch, train_idx):
+      #print(train_batch[0].shape)
       preds = self.netD(train_batch[0])
 
       if self.aug == None or self.aug == 'centerloss':

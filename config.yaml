@@ -1,33 +1,33 @@
 print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
 use_amp: False
-gpus: 0
+gpus: 1
 use_swa: False
-save_step_frequency: 25000
+save_step_frequency: 50000
 
 # calculate these with means_stds.py!
 means: [0.7032, 0.6346, 0.6234]
 std: [0.2520, 0.2507, 0.2417]
 
-optimizer: MADGRAD # Adam | AdamP | SGDP | MADGRAD (pip install madgrad)
+optimizer: AdamP # Adam | AdamP | SGDP | MADGRAD (pip install madgrad)
 lr: 0.0001
-batch_size: 6
+batch_size: 5 # 62
 aug: # gridmix, cutmix, CenterLoss, None
-size: 256 # image size
+size: 224 # image size
 precision: 32 # 32
 max_epochs: 9999
 progress_bar_refresh_rate: 20
-default_root_dir: '/home/Downloads/123/TEST/'
+default_root_dir: "/home/Desktop/MODELS/test/" # '/home/bro/Desktop/MODELS/0_timm_effV2_b0_256px/'
 
 path:
   # pretrain
-  pretrain: 
+  pretrain: #"/home/bro/Desktop/MODELS/test/Checkpoint_1_77515.pth"
   checkpoint_path: 
 
-  training_path: '/home/Downloads/123/TEST/data' # input folder
-  validation_path: '/home/Downloads/123/TEST/data' # validation folder
-  test_path: '/home/Downloads/123/TEST/data' # validation folder / test.py
-  log_path: '/home/Downloads/123/TEST/'
-  checkpoint_save_path: '/home/Downloads/123/TEST/'
+  training_path: '/media/dataset/' # input folder
+  validation_path: '/media/val_png_256/' # validation folder
+  test_path: '/media/val_png_256/' # validation folder / test.py
+  log_path: "/home/Desktop/MODELS/test/logs/" # '/home/bro/Desktop/MODELS/0_timm_effV2_b0_256px/logs/'
+  checkpoint_save_path: "/home/Desktop/MODELS/test/" # '/home/bro/Desktop/MODELS/0_timm_effV2_b0_256px/'
 
 
 # which model architecture to train
@@ -41,13 +41,16 @@ path:
 # vgg11, vgg13, vgg16, vgg19
 # SwinTransformer
 
+# for vgg and resnet
+#pretrain: False
+
 # timm
 # pip install timm
 # you can loop up models here: https://rwightman.github.io/pytorch-image-models/
 # Example: "tf_efficientnetv2_s"
 timm: False
-
 #model_train: 'tf_efficientnetv2_b0'
+#model_train: "swin_tiny_patch4_window7_224"
 
 #################
 
@@ -65,12 +68,34 @@ timm: False
 #depth: 6
 #heads: 8
 
-# Warning: only 256px input
-#model_train: mobilevit
+# Warning: only 256px input (b110)
+#model_train: mobilevit 
 #model_size: xxs # xxs | xs | s
 
 # because of too many parameters, a seperate config file named "hrt_config.yaml" is available
-model_train: hrt
+#model_train: hrt
+
+# volo (2021) (224px)
+#model_train: volo
+#model_size: volo_d1 # volo_d1 up to volo_d5
+#pretrain: False
+
+# pvt_v2 (2021)
+#model_train: pvt_v2
+#model_size: pvt_v2_b0 # pvt_v2_b0 to pvt_v2_b5, pvt_v2_b2_li
+#pretrain: False
+
+# ConvMLP (2021)
+#model_train: ConvMLP
+#model_size: convmlp_s # convmlp_s | convmlp_m | convmlp_l
+#pretrain: False
+
+# FocalTransformer (2021)
+#model_train: FocalTransformer
+
+# MobileFormer (2021)
+model_train: mobile_former
+model_size: config_52 # config_52 | config_294 | config_508
 
 #################
 
