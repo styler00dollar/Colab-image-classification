@@ -398,7 +398,7 @@ class CustomTrainClass(pl.LightningModule):
         loss_mean = np.mean(self.losses)
         #accuracy_mean = torch.mean(self.accuracy)
 
-        if self.aug == None or self.aug == 'centerloss':
+        if self.aug == None or self.aug == 'centerloss' or self.aug == 'MuAugment:
           accuracy_mean = torch.mean(torch.stack(self.accuracy))
         else:
           accuracy_mean = np.mean(self.accuracy)
