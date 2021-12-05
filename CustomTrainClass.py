@@ -366,7 +366,7 @@ class CustomTrainClass(pl.LightningModule):
       preds = self.netD(DiffAugment(train_batch[0], policy=self.policy))
 
     # Calculate loss
-    print(preds.shape, train_batch[1].shape)
+    #print(preds.shape, train_batch[1].shape)
     loss = self.criterion(preds, train_batch[1])
     writer.add_scalar('loss', loss, self.trainer.global_step)
 
