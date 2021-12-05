@@ -18,7 +18,7 @@ class DataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         img_tf = transforms.Compose([
-            transforms.Resize(size=self.size),
+            transforms.Resize(size=(self.size, self.size)),
             transforms.RandomRotation(5),
             transforms.CenterCrop(size=self.size),
             #transforms.RandomCrop(self.size),
@@ -29,7 +29,8 @@ class DataModule(pl.LightningDataModule):
         ])
 
         img_tf_val = transforms.Compose([
-            transforms.CenterCrop(256),
+            transforms.Resize(size=(self.size, self.size)),
+            #transforms.CenterCrop(256),
             transforms.ToTensor(),
             transforms.Normalize(mean = self.means,
                                   std = self.std)

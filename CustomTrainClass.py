@@ -14,8 +14,11 @@ with open("config.yaml", "r") as ymlfile:
 from tensorboardX import SummaryWriter
 writer = SummaryWriter(logdir=cfg['path']['log_path'])
 
+if cfg['aug'] == 'MuAugment':
+  from MuarAugment import BatchRandAugment, MuAugment
+
 class CustomTrainClass(pl.LightningModule):
-  def __init__(self, model_train='tf_efficientnetv2_b0', num_classes=3, diffaug_activate=False, policy='color,translation', aug=None, timm=False):
+  def __init__(self, model_train='tf_efficientnetv2_b0', num_classes=3, diffaug_activate=False, policy='color,translation', aug=None):
     super().__init__()
 
 
@@ -289,9 +292,9 @@ class CustomTrainClass(pl.LightningModule):
       elif cfg['model_size'] == "config_508":
         self.netD = MobileFormer(config_508)
 
-    if timm == True:
+    elif model_train == 'timm':
       import timm
-      self.netD = timm.create_model(model_train, num_classes=num_classes, pretrained=True)
+      self.netD = timm.create_model(cfg['model_choise'], num_classes=num_classes, pretrained=True)
 
     #weights_init(self.netD, 'kaiming') #only use this if there is no pretrain
 
@@ -314,12 +317,14 @@ class CustomTrainClass(pl.LightningModule):
         crop_aspect_ratio=(0.5, 2),
         n_holes_x=(2, 6)
       )
-    elif aug == 'centerloss':
+
+    self.aug = aug
+
+    if cfg['loss'] == 'CenterLoss':
       from centerloss import CenterLoss
       self.criterion = CenterLoss(num_classes=num_classes, feat_dim=2, use_gpu=True)
-    else:
+    elif cfg['loss'] == 'normal':
       self.criterion = torch.nn.CrossEntropyLoss()
-    self.aug = aug
 
     self.accuracy = []
     self.losses = []
@@ -329,6 +334,15 @@ class CustomTrainClass(pl.LightningModule):
 
     self.policy = policy
     self.iter_check = 0
+
+
+    if cfg['aug'] == 'MuAugment':
+      rand_augment = BatchRandAugment(N_TFMS=3, MAGN=3, mean=cfg['means'], std=cfg['std'])
+      self.mu_transform = MuAugment(rand_augment, N_COMPS=4, N_SELECTED=2)
+
+  def forward(self, x):
+    return self.netD(x)
+
   def training_step(self, train_batch, batch_idx):
     if self.trainer.global_step != 0:
       if self.iter_check == self.trainer.global_step:
@@ -338,6 +352,10 @@ class CustomTrainClass(pl.LightningModule):
 
     if self.aug == 'gridmix' or self.aug == 'cutmix':
       train_batch[0], train_batch[1] = self.criterion.get_sample(images=train_batch[0], targets=train_batch[1].unsqueeze(-1))
+    elif self.aug == 'MuAugment':
+      self.mu_transform.setup(self)
+      train_batch[0], train_batch[1] = self.mu_transform((train_batch[0], train_batch[1]))
+
     #elif self.aug == 'cutmix':
     #  train_batch[0], train_batch[1] = cutmix(train_batch[0], train_batch[1].unsqueeze(-1), 1)
     #print(train_batch[0].shape)
@@ -348,12 +366,12 @@ class CustomTrainClass(pl.LightningModule):
       preds = self.netD(DiffAugment(train_batch[0], policy=self.policy))
 
     # Calculate loss
-    #print(preds.shape, train_batch[1].shape)
+    print(preds.shape, train_batch[1].shape)
     loss = self.criterion(preds, train_batch[1])
     writer.add_scalar('loss', loss, self.trainer.global_step)
 
     if cfg['print_training_epoch_end_metrics'] == False:
-      if self.aug == None or self.aug == 'centerloss':
+      if self.aug == None or self.aug == 'centerloss' or self.aug == 'MuAugment':
         acc = calculate_accuracy(preds, train_batch[1])
       else:
         acc = calc_accuracy_gridmix(preds, train_batch[1])

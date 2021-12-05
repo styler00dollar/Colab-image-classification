@@ -9,7 +9,7 @@ with open("config.yaml", "r") as ymlfile:
 
 def main():
     dm = DataModule(training_path=cfg['path']['training_path'], validation_path=cfg['path']['validation_path'], test_path=cfg['path']['test_path'], num_workers = cfg['num_workers'], size = cfg['size'], batch_size=cfg['batch_size'], means=cfg['means'], std=cfg['std'])
-    model = CustomTrainClass(model_train=cfg['model_train'], num_classes=cfg['num_classes'], diffaug_activate=cfg['diffaug_activate'], policy=cfg['policy'], aug=cfg['aug'], timm=cfg['timm'])
+    model = CustomTrainClass(model_train=cfg['model_train'], num_classes=cfg['num_classes'], diffaug_activate=cfg['diffaug_activate'], policy=cfg['policy'], aug=cfg['aug'])
 
     # skipping validation with limit_val_batches=0
     if cfg['use_amp'] == False:
