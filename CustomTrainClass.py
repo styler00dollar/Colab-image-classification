@@ -437,6 +437,9 @@ class CustomTrainClass(pl.LightningModule):
       writer.add_scalar('val/loss_mean', loss_mean, self.trainer.global_step)
       writer.add_scalar('val/accuracy_mean', accuracy_mean, self.trainer.global_step)
 
+      self.losses_val = []
+      self.accuracy_val = []
+    
   def test_step(self, train_batch, train_idx):
       preds = self.netD(train_batch[0])
       print("################")
