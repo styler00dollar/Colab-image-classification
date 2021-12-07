@@ -292,6 +292,23 @@ class CustomTrainClass(pl.LightningModule):
       elif cfg['model_size'] == "config_508":
         self.netD = MobileFormer(config_508)
 
+    elif model_train == 'poolformer':
+      if cfg['model_size'] == "poolformer_s12":
+        from arch.poolformer_arch import poolformer_s12
+        self.netD = poolformer_s12(pretrained=True, num_classes=num_classes)
+      if cfg['model_size'] == "poolformer_s24":
+        from arch.poolformer_arch import poolformer_s24
+        self.netD = poolformer_s24(pretrained=True, num_classes=num_classes)
+      if cfg['model_size'] == "poolformer_s36":
+        from arch.poolformer_arch import poolformer_s36
+        self.netD = poolformer_s36(pretrained=True, num_classes=num_classes)
+      if cfg['model_size'] == "poolformer_m36":
+        from arch.poolformer_arch import poolformer_m36
+        self.netD = poolformer_m36(pretrained=True, num_classes=num_classes)
+      if cfg['model_size'] == "poolformer_m48":
+        from arch.poolformer_arch import poolformer_m48
+        self.netD = poolformer_m48(pretrained=True, num_classes=num_classes)
+
     elif model_train == 'timm':
       import timm
       self.netD = timm.create_model(cfg['model_choise'], num_classes=num_classes, pretrained=True)
@@ -398,19 +415,19 @@ class CustomTrainClass(pl.LightningModule):
         loss_mean = np.mean(self.losses)
         #accuracy_mean = torch.mean(self.accuracy)
 
-        if self.aug == None or self.aug == 'centerloss' or self.aug == 'MuAugment:
-          accuracy_mean = torch.mean(torch.stack(self.accuracy))
-        else:
-          accuracy_mean = np.mean(self.accuracy)
+      if self.aug == None or self.aug == 'centerloss' or self.aug == 'MuAugment':
+        accuracy_mean = torch.mean(torch.stack(self.accuracy))
+      else:
+        accuracy_mean = np.mean(self.accuracy)
 
-        print(f"'Epoch': {self.current_epoch}, 'loss': {loss_mean:.2f}, 'accuracy': {accuracy_mean:.2f}")
+      print(f"'Epoch': {self.current_epoch}, 'loss': {loss_mean:.2f}, 'accuracy': {accuracy_mean:.2f}")
 
-        # logging
-        #self.log('train/loss_mean', loss_mean, prog_bar=True, logger=True, on_epoch=True)
-        #self.log('train/accuracy_mean', accuracy_mean, prog_bar=True, logger=True, on_epoch=True)
+      # logging
+      #self.log('train/loss_mean', loss_mean, prog_bar=True, logger=True, on_epoch=True)
+      #self.log('train/accuracy_mean', accuracy_mean, prog_bar=True, logger=True, on_epoch=True)
 
-        self.losses = []
-        self.accuracy = []
+      self.losses = []
+      self.accuracy = []
 
       torch.save(self.netD.state_dict(), f"Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth")
 

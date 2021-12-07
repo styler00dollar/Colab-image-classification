@@ -49,8 +49,8 @@ path:
 # pip install timm
 # you can loop up models here: https://rwightman.github.io/pytorch-image-models/
 # Example: "tf_efficientnetv2_s"
-model_train: timm
-model_choise: 'tf_efficientnetv2_b0'
+#model_train: timm
+#model_choise: 'tf_efficientnetv2_b0'
 #model_choise: "swin_tiny_patch4_window7_224"
 
 #################
@@ -97,6 +97,10 @@ model_choise: 'tf_efficientnetv2_b0'
 # MobileFormer (2021)
 #model_train: mobile_former
 #model_size: config_52 # config_52 | config_294 | config_508
+
+# poolformer (2021)
+model_train: poolformer
+model_size: poolformer_s12 # poolformer_s12 | poolformer_s24 | poolformer_s36 | poolformer_m36 | poolformer_m48
 
 #################
 
