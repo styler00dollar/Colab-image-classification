@@ -9,44 +9,37 @@ from tqdm import tqdm
 import numpy as np
 import PIL
 from PIL import Image
+import timm
+import torchvision
 
-import yaml
+model_path = ""
+model_choise = ""
+size = 256
+half = False
+resize_method = "OpenCV" # OpenCV | PIL
 
-with open("config.yaml", "r") as ymlfile:
-    cfg = yaml.safe_load(ymlfile)
-
+input_path = "/media/"
+path0 = "0"
+path1 = "1"
 
 def main():
-    if cfg['model_train'] == 'efficientnet-b0':
-      model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=cfg['num_classes'])
-    elif cfg['model_train'] == 'efficientnet-b1':
-      model = EfficientNet.from_pretrained('efficientnet-b1', num_classes=cfg['num_classes'])
-    elif cfg['model_train'] == 'efficientnet-b2':
-      model = EfficientNet.from_pretrained('efficientnet-b2', num_classes=cfg['num_classes'])
-    elif cfg['model_train'] == 'efficientnet-b3':
-      model = EfficientNet.from_pretrained('efficientnet-b3', num_classes=cfg['num_classes'])
-    elif cfg['model_train'] == 'efficientnet-b4':
-      model = EfficientNet.from_pretrained('efficientnet-b4', num_classes=cfg['num_classes'])
-    elif cfg['model_train'] == 'efficientnet-b5':
-      model = EfficientNet.from_pretrained('efficientnet-b5', num_classes=cfg['num_classes'])
-    elif cfg['model_train'] == 'efficientnet-b6':
-      model = EfficientNet.from_pretrained('efficientnet-b6', num_classes=cfg['num_classes'])
-    elif cfg['model_train'] == 'efficientnet-b7':
-      model = EfficientNet.from_pretrained('efficientnet-b7', num_classes=cfg['num_classes'])
+    model = timm.create_model(model_choise, num_classes=2, pretrained=True)
+    #from efficientnet_pytorch import EfficientNet
+    #model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=2)
 
-    model.load_state_dict(torch.load(cfg['model_path'], map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    if not os.path.exists(cfg['path0']):
-        os.makedirs(cfg['path0'])
-    if not os.path.exists(cfg['path1']):
-        os.makedirs(cfg['path1'])
+    if not os.path.exists(path0):
+        os.makedirs(path0)
+    if not os.path.exists(path1):
+        os.makedirs(path1)
 
-    files = glob.glob(cfg['data_input_path'] + '/**/*.png', recursive=True)
-    files_jpg = glob.glob(cfg['data_input_path'] + '/**/*.jpg', recursive=True)
+    files = glob.glob(input_path + '/**/*.png', recursive=True)
+    files_jpg = glob.glob(input_path + '/**/*.jpg', recursive=True)
     files.extend(files_jpg)
 
-    if cfg['precision'] == 16:
+    if half == True:
       model.half()
     model.to(device)
     model.eval()
@@ -55,20 +48,22 @@ def main():
       for f in tqdm(files):
           image = cv2.imread(f)
           #####################################
-          if cfg['resize_method'] == "OpenCV":
-              resized = cv2.resize(image, (cfg['size'],cfg['size']), interpolation=cv2.INTER_AREA)
+          if resize_method == "OpenCV":
+              resized = cv2.resize(image, (size, size), interpolation=cv2.INTER_AREA)
 
           # resize with PIL
-          elif cfg['resize_method'] == "PIL":
+          elif resize_method == "PIL":
             image = Image.fromarray(image)
-            image = image.resize((cfg['size'],cfg['size']))
+            image = image.resize((size, size))
             resized = np.asarray(image)
           #####################################
 
           image = torch.from_numpy(resized).unsqueeze(0).permute(0,3,1,2)/255
 
+          image = torchvision.transforms.functional.normalize(image, mean=[0.7032, 0.6346, 0.6234], std=[0.2520, 0.2507, 0.2417])
+
           image=image.to(device)
-          if device == 'cuda' and cfg['precision'] == 16::
+          if half == True:
               image=image.type(torch.cuda.HalfTensor)
 
           y_pred= model(image)
@@ -77,10 +72,15 @@ def main():
           top_pred = y_prob.argmax(1, keepdim = True)
 
 
+          """
           if top_pred == 0:
-            shutil.move(f, os.path.join(cfg['path0'], os.path.basename(f)))
+            shutil.move(f, os.path.join(path0, os.path.basename(f)))
           elif top_pred == 1:
-            shutil.move(f, os.path.join(cfg['path1'], os.path.basename(f)))
+            shutil.move(f, os.path.join(path1, os.path.basename(f)))
+          """
+
+          if top_pred == 1 and y_prob[0][1] > 0.98:
+            shutil.copy(f, os.path.join(path1, os.path.basename(f)))
 
 if __name__ == "__main__":
     main()

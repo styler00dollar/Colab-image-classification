@@ -108,11 +108,3 @@ num_classes: 2 # Warning: Some do require amount classes + 1 as num_classes.
 diffaug_activate: False
 policy: 'color,translation' # [color,translation,cutout]
 num_workers: 12
-
-################################################################
-# inference
-# args for sort.py / test.py (only supports efficientnet)
-resize_method: PIL # PIL | OpenCV
-model_path: '/content/model.pth'
-path0: '/content/0'
-path1: '/content/1'
