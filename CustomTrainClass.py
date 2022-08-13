@@ -414,15 +414,15 @@ class CustomTrainClass(pl.LightningModule):
             if cfg["model_size"] == "small":
                 from arch.next_vit_arch import nextvit_small
 
-                self.netD = nextvit_small(pretrained=True)
+                self.netD = nextvit_small(pretrained=True, num_classes=num_classes)
             if cfg["model_size"] == "base":
                 from arch.next_vit_arch import nextvit_base
 
-                self.netD = nextvit_base(pretrained=True)
+                self.netD = nextvit_base(pretrained=True, num_classes=num_classes)
             if cfg["model_size"] == "large":
                 from arch.next_vit_arch import nextvit_large
 
-                self.netD = nextvit_large(pretrained=True)
+                self.netD = nextvit_large(pretrained=True, num_classes=num_classes)
 
         elif model_train == "timm":
             import timm
