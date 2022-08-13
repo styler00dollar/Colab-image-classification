@@ -1,6 +1,6 @@
 print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
 use_amp: False
-gpus: 0
+gpus: 1
 use_swa: False
 save_step_frequency: 5000
 
@@ -15,20 +15,19 @@ aug: MuAugment # gridmix, cutmix, MuAugment, None
 loss: normal # normal | CenterLoss
 size: 256 # image size
 precision: 32 # 32
-max_epochs: 9999
 progress_bar_refresh_rate: 20
-default_root_dir: "/content/"
+default_root_dir: "/home/user/Colab-image-classification/test/"
 
 path:
   # pretrain
   pretrain:
   checkpoint_path: 
 
-  training_path: '/content/data/' # input folder
-  validation_path: '/content/data/' # validation folder
-  test_path: '/content/data/' # validation folder / test.py
-  log_path: "/content/logs/"
-  checkpoint_save_path: "/content/" 
+  training_path: '/home/user/Colab-image-classification/test/' # input folder
+  validation_path: '/home/user/Colab-image-classification/test/data' # validation folder
+  test_path: '/home/user/Colab-image-classification/test/data' # validation folder / test.py
+  log_path: "/home/user/Colab-image-classification/test/"
+  checkpoint_save_path: "/home/user/Colab-image-classification/test/" 
 
 
 # which model architecture to train
@@ -99,8 +98,12 @@ path:
 #model_size: config_52 # config_52 | config_294 | config_508
 
 # poolformer (2021)
-model_train: poolformer
-model_size: poolformer_s12 # poolformer_s12 | poolformer_s24 | poolformer_s36 | poolformer_m36 | poolformer_m48
+#model_train: poolformer
+#model_size: poolformer_s12 # poolformer_s12 | poolformer_s24 | poolformer_s36 | poolformer_m36 | poolformer_m48
+
+# next vit (2022)
+model_train: next_vit
+model_size: small # small | base | large
 
 #################
 

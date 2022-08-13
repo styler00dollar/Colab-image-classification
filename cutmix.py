@@ -14,7 +14,7 @@ from torch import nn
 
 
 class cutmix(nn.Module):
-    """ Implementation of GridMixup loss
+    """Implementation of GridMixup loss
 
     :param alpha: Percent of the first image on the crop. Can be float or Tuple[float, float]
                     - if float: lambda parameter gets from the beta-distribution np.random.beta(alpha, alpha)
@@ -25,13 +25,14 @@ class cutmix(nn.Module):
     :param crop_area_ratio: Define percentage of the crop area
     :param crop_aspect_ratio: Define crop aspect ratio
     """
+
     def __init__(
-            self,
-            alpha: t.Union[float, t.Tuple[float, float]] = (0.1, 0.9),
-            n_holes_x: t.Union[int, t.Tuple[int, int]] = 20,
-            hole_aspect_ratio: t.Union[float, t.Tuple[float, float]] = 1.,
-            crop_area_ratio: t.Union[float, t.Tuple[float, float]] = 1.,
-            crop_aspect_ratio: t.Union[float, t.Tuple[float, float]] = 1.,
+        self,
+        alpha: t.Union[float, t.Tuple[float, float]] = (0.1, 0.9),
+        n_holes_x: t.Union[int, t.Tuple[int, int]] = 20,
+        hole_aspect_ratio: t.Union[float, t.Tuple[float, float]] = 1.0,
+        crop_area_ratio: t.Union[float, t.Tuple[float, float]] = 1.0,
+        crop_aspect_ratio: t.Union[float, t.Tuple[float, float]] = 1.0,
     ):
 
         super().__init__()
@@ -55,7 +56,9 @@ class cutmix(nn.Module):
         return "gridmixup"
 
     @staticmethod
-    def _get_random_crop(height: int, width: int, crop_area_ratio: float, crop_aspect_ratio: float) -> t.Tuple:
+    def _get_random_crop(
+        height: int, width: int, crop_area_ratio: float, crop_aspect_ratio: float
+    ) -> t.Tuple:
         crop_area = int(height * width * crop_area_ratio)
         crop_width = int(np.sqrt(crop_area / crop_aspect_ratio))
         crop_height = int(crop_width * crop_aspect_ratio)
@@ -70,15 +73,15 @@ class cutmix(nn.Module):
         return x1, y1, x2, y2
 
     def _get_gridmask(
-            self,
-            image_shape: t.Tuple[int, int],
-            crop_area_ratio: float,
-            crop_aspect_ratio: float,
-            lam: float,
-            nx: int,
-            ar: float,
+        self,
+        image_shape: t.Tuple[int, int],
+        crop_area_ratio: float,
+        crop_aspect_ratio: float,
+        lam: float,
+        nx: int,
+        ar: float,
     ) -> np.ndarray:
-        """ Method make grid mask
+        """Method make grid mask
 
         :param image_shape: Shape of the images
         :param lam: Lambda parameter
@@ -102,12 +105,14 @@ class cutmix(nn.Module):
         y0 = int(np.round(max(cy - h / 2, 0)))
         y1 = int(np.round(min(cy + h / 2, image_h)))
 
-        #data[:, :, ] = shuffled_data[:, :, y0:y1, x0:x1]
+        # data[:, :, ] = shuffled_data[:, :, y0:y1, x0:x1]
         mask[y0:y1, x0:x1] = 1
         return mask
 
-    def get_sample(self, images: torch.Tensor, targets: torch.Tensor) -> t.Tuple[torch.Tensor, torch.Tensor]:
-        """ Method returns augmented images and targets
+    def get_sample(
+        self, images: torch.Tensor, targets: torch.Tensor
+    ) -> t.Tuple[torch.Tensor, torch.Tensor]:
+        """Method returns augmented images and targets
 
         :param images: Batch of non-augmented images
         :param targets: Batch of non-augmented targets
@@ -130,15 +135,19 @@ class cutmix(nn.Module):
 
         nx = random.randint(self.n_holes_x[0], self.n_holes_x[1])
         ar = np.random.uniform(self.hole_aspect_ratio[0], self.hole_aspect_ratio[1])
-        crop_area_ratio = np.random.uniform(self.crop_area_ratio[0], self.crop_area_ratio[1])
-        crop_aspect_ratio = np.random.uniform(self.crop_aspect_ratio[0], self.crop_aspect_ratio[1])
+        crop_area_ratio = np.random.uniform(
+            self.crop_area_ratio[0], self.crop_area_ratio[1]
+        )
+        crop_aspect_ratio = np.random.uniform(
+            self.crop_aspect_ratio[0], self.crop_aspect_ratio[1]
+        )
         mask = self._get_gridmask(
             image_shape=(height, width),
             crop_area_ratio=crop_area_ratio,
             crop_aspect_ratio=crop_aspect_ratio,
             lam=lam,
             nx=nx,
-            ar=ar
+            ar=ar,
         )
         # Adjust lambda to exactly match pixel ratio
         lam = 1 - (mask.sum() / (images.size()[-1] * images.size()[-2]))
@@ -148,9 +157,14 @@ class cutmix(nn.Module):
         images = images * (1 - mask) + images[indices, ...] * mask
 
         # Prepare out labels
-        lam_list = torch.from_numpy(np.ones(shape=targets.shape) * lam).to(targets.device)
-        out_targets = torch.cat([targets, shuffled_targets, lam_list], dim=1).transpose(0, 1)
+        lam_list = torch.from_numpy(np.ones(shape=targets.shape) * lam).to(
+            targets.device
+        )
+        out_targets = torch.cat([targets, shuffled_targets, lam_list], dim=1).transpose(
+            0, 1
+        )
         from torchvision.utils import save_image
+
         save_image(images, "/content/test.png")
         return images, out_targets
 

@@ -29,20 +29,25 @@ import math
 import numpy as np
 
 
-def _cfg(url='', **kwargs):
+def _cfg(url="", **kwargs):
     return {
-        'url': url,
-        'num_classes': 3, 'input_size': (3, 224, 224), 'pool_size': None,
-        'crop_pct': .96, 'interpolation': 'bicubic',
-        'mean': IMAGENET_DEFAULT_MEAN, 'std': IMAGENET_DEFAULT_STD,
-        'first_conv': 'patch_embed.proj', 'classifier': 'head',
-        **kwargs
+        "url": url,
+        "num_classes": 3,
+        "input_size": (3, 224, 224),
+        "pool_size": None,
+        "crop_pct": 0.96,
+        "interpolation": "bicubic",
+        "mean": IMAGENET_DEFAULT_MEAN,
+        "std": IMAGENET_DEFAULT_STD,
+        "first_conv": "patch_embed.proj",
+        "classifier": "head",
+        **kwargs,
     }
 
 
 default_cfgs = {
-    'volo': _cfg(crop_pct=0.96),
-    'volo_large': _cfg(crop_pct=1.15),
+    "volo": _cfg(crop_pct=0.96),
+    "volo_large": _cfg(crop_pct=1.15),
 }
 
 
@@ -55,8 +60,18 @@ class OutlookAttention(nn.Module):
     return: token features after outlook attention
     """
 
-    def __init__(self, dim, num_heads, kernel_size=3, padding=1, stride=1,
-                 qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
+    def __init__(
+        self,
+        dim,
+        num_heads,
+        kernel_size=3,
+        padding=1,
+        stride=1,
+        qkv_bias=False,
+        qk_scale=None,
+        attn_drop=0.0,
+        proj_drop=0.0,
+    ):
         super().__init__()
         head_dim = dim // num_heads
         self.num_heads = num_heads
@@ -81,22 +96,46 @@ class OutlookAttention(nn.Module):
         v = self.v(x).permute(0, 3, 1, 2)  # B, C, H, W
 
         h, w = math.ceil(H / self.stride), math.ceil(W / self.stride)
-        v = self.unfold(v).reshape(B, self.num_heads, C // self.num_heads,
-                                   self.kernel_size * self.kernel_size,
-                                   h * w).permute(0, 1, 4, 3, 2)  # B,H,N,kxk,C/H
+        v = (
+            self.unfold(v)
+            .reshape(
+                B,
+                self.num_heads,
+                C // self.num_heads,
+                self.kernel_size * self.kernel_size,
+                h * w,
+            )
+            .permute(0, 1, 4, 3, 2)
+        )  # B,H,N,kxk,C/H
 
         attn = self.pool(x.permute(0, 3, 1, 2)).permute(0, 2, 3, 1)
-        attn = self.attn(attn).reshape(
-            B, h * w, self.num_heads, self.kernel_size * self.kernel_size,
-            self.kernel_size * self.kernel_size).permute(0, 2, 1, 3, 4)  # B,H,N,kxk,kxk
+        attn = (
+            self.attn(attn)
+            .reshape(
+                B,
+                h * w,
+                self.num_heads,
+                self.kernel_size * self.kernel_size,
+                self.kernel_size * self.kernel_size,
+            )
+            .permute(0, 2, 1, 3, 4)
+        )  # B,H,N,kxk,kxk
         attn = attn * self.scale
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
-        x = (attn @ v).permute(0, 1, 4, 3, 2).reshape(
-            B, C * self.kernel_size * self.kernel_size, h * w)
-        x = F.fold(x, output_size=(H, W), kernel_size=self.kernel_size,
-                   padding=self.padding, stride=self.stride)
+        x = (
+            (attn @ v)
+            .permute(0, 1, 4, 3, 2)
+            .reshape(B, C * self.kernel_size * self.kernel_size, h * w)
+        )
+        x = F.fold(
+            x,
+            output_size=(H, W),
+            kernel_size=self.kernel_size,
+            padding=self.padding,
+            stride=self.stride,
+        )
 
         x = self.proj(x.permute(0, 2, 3, 1))
         x = self.proj_drop(x)
@@ -114,26 +153,42 @@ class Outlooker(nn.Module):
     --kernel_size: kernel size in each window for outlook attention
     return: outlooker layer
     """
-    def __init__(self, dim, kernel_size, padding, stride=1,
-                 num_heads=1,mlp_ratio=3., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU,
-                 norm_layer=nn.LayerNorm, qkv_bias=False,
-                 qk_scale=None):
+
+    def __init__(
+        self,
+        dim,
+        kernel_size,
+        padding,
+        stride=1,
+        num_heads=1,
+        mlp_ratio=3.0,
+        attn_drop=0.0,
+        drop_path=0.0,
+        act_layer=nn.GELU,
+        norm_layer=nn.LayerNorm,
+        qkv_bias=False,
+        qk_scale=None,
+    ):
         super().__init__()
         self.norm1 = norm_layer(dim)
-        self.attn = OutlookAttention(dim, num_heads, kernel_size=kernel_size,
-                                     padding=padding, stride=stride,
-                                     qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                     attn_drop=attn_drop)
+        self.attn = OutlookAttention(
+            dim,
+            num_heads,
+            kernel_size=kernel_size,
+            padding=padding,
+            stride=stride,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+        )
 
-        self.drop_path = DropPath(
-            drop_path) if drop_path > 0. else nn.Identity()
+        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
 
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim,
-                       hidden_features=mlp_hidden_dim,
-                       act_layer=act_layer)
+        self.mlp = Mlp(
+            in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer
+        )
 
     def forward(self, x):
         x = x + self.drop_path(self.attn(self.norm1(x)))
@@ -144,9 +199,14 @@ class Outlooker(nn.Module):
 class Mlp(nn.Module):
     "Implementation of MLP"
 
-    def __init__(self, in_features, hidden_features=None,
-                 out_features=None, act_layer=nn.GELU,
-                 drop=0.):
+    def __init__(
+        self,
+        in_features,
+        hidden_features=None,
+        out_features=None,
+        act_layer=nn.GELU,
+        drop=0.0,
+    ):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -167,8 +227,15 @@ class Mlp(nn.Module):
 class Attention(nn.Module):
     "Implementation of self-attention"
 
-    def __init__(self, dim,  num_heads=8, qkv_bias=False,
-                 qk_scale=None, attn_drop=0., proj_drop=0.):
+    def __init__(
+        self,
+        dim,
+        num_heads=8,
+        qkv_bias=False,
+        qk_scale=None,
+        attn_drop=0.0,
+        proj_drop=0.0,
+    ):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
@@ -182,10 +249,16 @@ class Attention(nn.Module):
     def forward(self, x):
         B, H, W, C = x.shape
 
-        qkv = self.qkv(x).reshape(B, H * W, 3, self.num_heads,
-                                  C // self.num_heads).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[
-            2]  # make torchscript happy (cannot use tensor as tuple)
+        qkv = (
+            self.qkv(x)
+            .reshape(B, H * W, 3, self.num_heads, C // self.num_heads)
+            .permute(2, 0, 3, 1, 4)
+        )
+        q, k, v = (
+            qkv[0],
+            qkv[1],
+            qkv[2],
+        )  # make torchscript happy (cannot use tensor as tuple)
 
         attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
@@ -203,23 +276,37 @@ class Transformer(nn.Module):
     Implementation of Transformer,
     Transformer is the second stage in our VOLO
     """
-    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False,
-                 qk_scale=None, attn_drop=0., drop_path=0.,
-                 act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+
+    def __init__(
+        self,
+        dim,
+        num_heads,
+        mlp_ratio=4.0,
+        qkv_bias=False,
+        qk_scale=None,
+        attn_drop=0.0,
+        drop_path=0.0,
+        act_layer=nn.GELU,
+        norm_layer=nn.LayerNorm,
+    ):
         super().__init__()
         self.norm1 = norm_layer(dim)
-        self.attn = Attention(dim, num_heads=num_heads, qkv_bias=qkv_bias,
-                              qk_scale=qk_scale, attn_drop=attn_drop)
+        self.attn = Attention(
+            dim,
+            num_heads=num_heads,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+        )
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
-        self.drop_path = DropPath(
-            drop_path) if drop_path > 0. else nn.Identity()
+        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
 
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim,
-                       hidden_features=mlp_hidden_dim,
-                       act_layer=act_layer)
+        self.mlp = Mlp(
+            in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer
+        )
 
     def forward(self, x):
         x = x + self.drop_path(self.attn(self.norm1(x)))
@@ -232,8 +319,17 @@ class ClassAttention(nn.Module):
     Class attention layer from CaiT, see details in CaiT
     Class attention is the post stage in our VOLO, which is optional.
     """
-    def __init__(self, dim, num_heads=8, head_dim=None, qkv_bias=False,
-                 qk_scale=None, attn_drop=0., proj_drop=0.):
+
+    def __init__(
+        self,
+        dim,
+        num_heads=8,
+        head_dim=None,
+        qkv_bias=False,
+        qk_scale=None,
+        attn_drop=0.0,
+        proj_drop=0.0,
+    ):
         super().__init__()
         self.num_heads = num_heads
         if head_dim is not None:
@@ -243,9 +339,7 @@ class ClassAttention(nn.Module):
             self.head_dim = head_dim
         self.scale = qk_scale or head_dim**-0.5
 
-        self.kv = nn.Linear(dim,
-                            self.head_dim * self.num_heads * 2,
-                            bias=qkv_bias)
+        self.kv = nn.Linear(dim, self.head_dim * self.num_heads * 2, bias=qkv_bias)
         self.q = nn.Linear(dim, self.head_dim * self.num_heads, bias=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(self.head_dim * self.num_heads, dim)
@@ -254,17 +348,20 @@ class ClassAttention(nn.Module):
     def forward(self, x):
         B, N, C = x.shape
 
-        kv = self.kv(x).reshape(B, N, 2, self.num_heads,
-                                self.head_dim).permute(2, 0, 3, 1, 4)
-        k, v = kv[0], kv[
-            1]  # make torchscript happy (cannot use tensor as tuple)
+        kv = (
+            self.kv(x)
+            .reshape(B, N, 2, self.num_heads, self.head_dim)
+            .permute(2, 0, 3, 1, 4)
+        )
+        k, v = kv[0], kv[1]  # make torchscript happy (cannot use tensor as tuple)
         q = self.q(x[:, :1, :]).reshape(B, self.num_heads, 1, self.head_dim)
-        attn = ((q * self.scale) @ k.transpose(-2, -1))
+        attn = (q * self.scale) @ k.transpose(-2, -1)
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
-        cls_embed = (attn @ v).transpose(1, 2).reshape(
-            B, 1, self.head_dim * self.num_heads)
+        cls_embed = (
+            (attn @ v).transpose(1, 2).reshape(B, 1, self.head_dim * self.num_heads)
+        )
         cls_embed = self.proj(cls_embed)
         cls_embed = self.proj_drop(cls_embed)
         return cls_embed
@@ -276,23 +373,41 @@ class ClassBlock(nn.Module):
     We use two-layers class attention in our VOLO, which is optional.
     """
 
-    def __init__(self, dim, num_heads, head_dim=None, mlp_ratio=4.,
-                 qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+    def __init__(
+        self,
+        dim,
+        num_heads,
+        head_dim=None,
+        mlp_ratio=4.0,
+        qkv_bias=False,
+        qk_scale=None,
+        drop=0.0,
+        attn_drop=0.0,
+        drop_path=0.0,
+        act_layer=nn.GELU,
+        norm_layer=nn.LayerNorm,
+    ):
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.attn = ClassAttention(
-            dim, num_heads=num_heads, head_dim=head_dim, qkv_bias=qkv_bias,
-            qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
+            dim,
+            num_heads=num_heads,
+            head_dim=head_dim,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+            proj_drop=drop,
+        )
         # NOTE: drop path for stochastic depth
-        self.drop_path = DropPath(
-            drop_path) if drop_path > 0. else nn.Identity()
+        self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim,
-                       hidden_features=mlp_hidden_dim,
-                       act_layer=act_layer,
-                       drop=drop)
+        self.mlp = Mlp(
+            in_features=dim,
+            hidden_features=mlp_hidden_dim,
+            act_layer=act_layer,
+            drop=drop,
+        )
 
     def forward(self, x):
         cls_embed = x[:, :1]
@@ -305,7 +420,7 @@ def get_block(block_type, **kargs):
     """
     get block by name, specifically for class attention block in here
     """
-    if block_type == 'ca':
+    if block_type == "ca":
         return ClassBlock(**kargs)
 
 
@@ -316,7 +431,7 @@ def rand_bbox(size, lam, scale=1):
     """
     W = size[1] // scale
     H = size[2] // scale
-    cut_rat = np.sqrt(1. - lam)
+    cut_rat = np.sqrt(1.0 - lam)
     cut_w = np.int(W * cut_rat)
     cut_h = np.int(H * cut_rat)
 
@@ -338,32 +453,60 @@ class PatchEmbed(nn.Module):
     Different with ViT use 1 conv layer, we use 4 conv layers to do patch embedding
     """
 
-    def __init__(self, img_size=224, stem_conv=False, stem_stride=1,
-                 patch_size=8, in_chans=3, hidden_dim=64, embed_dim=384):
+    def __init__(
+        self,
+        img_size=224,
+        stem_conv=False,
+        stem_stride=1,
+        patch_size=8,
+        in_chans=3,
+        hidden_dim=64,
+        embed_dim=384,
+    ):
         super().__init__()
         assert patch_size in [4, 8, 16]
 
         self.stem_conv = stem_conv
         if stem_conv:
             self.conv = nn.Sequential(
-                nn.Conv2d(in_chans, hidden_dim, kernel_size=7, stride=stem_stride,
-                          padding=3, bias=False),  # 112x112
+                nn.Conv2d(
+                    in_chans,
+                    hidden_dim,
+                    kernel_size=7,
+                    stride=stem_stride,
+                    padding=3,
+                    bias=False,
+                ),  # 112x112
                 nn.BatchNorm2d(hidden_dim),
                 nn.ReLU(inplace=True),
-                nn.Conv2d(hidden_dim, hidden_dim, kernel_size=3, stride=1,
-                          padding=1, bias=False),  # 112x112
+                nn.Conv2d(
+                    hidden_dim,
+                    hidden_dim,
+                    kernel_size=3,
+                    stride=1,
+                    padding=1,
+                    bias=False,
+                ),  # 112x112
                 nn.BatchNorm2d(hidden_dim),
                 nn.ReLU(inplace=True),
-                nn.Conv2d(hidden_dim, hidden_dim, kernel_size=3, stride=1,
-                          padding=1, bias=False),  # 112x112
+                nn.Conv2d(
+                    hidden_dim,
+                    hidden_dim,
+                    kernel_size=3,
+                    stride=1,
+                    padding=1,
+                    bias=False,
+                ),  # 112x112
                 nn.BatchNorm2d(hidden_dim),
                 nn.ReLU(inplace=True),
             )
 
-        self.proj = nn.Conv2d(hidden_dim,
-                              embed_dim,
-                              kernel_size=patch_size // stem_stride,
-                              stride=patch_size // stem_stride)
+        self.proj = nn.Conv2d(
+            hidden_dim,
+            embed_dim,
+            kernel_size=patch_size // stem_stride,
+            stride=patch_size // stem_stride,
+        )
         self.num_patches = (img_size // patch_size) * (img_size // patch_size)
 
     def forward(self, x):
@@ -377,10 +520,12 @@ class Downsample(nn.Module):
     """
     Image to Patch Embedding, downsampling between stage1 and stage2
     """
+
     def __init__(self, in_embed_dim, out_embed_dim, patch_size):
         super().__init__()
-        self.proj = nn.Conv2d(in_embed_dim, out_embed_dim,
-                              kernel_size=patch_size, stride=patch_size)
+        self.proj = nn.Conv2d(
+            in_embed_dim, out_embed_dim, kernel_size=patch_size, stride=patch_size
+        )
 
     def forward(self, x):
         x = x.permute(0, 3, 1, 2)
@@ -389,45 +534,84 @@ class Downsample(nn.Module):
         return x
 
 
-def outlooker_blocks(block_fn, index, dim, layers, num_heads=1, kernel_size=3,
-                     padding=1,stride=1, mlp_ratio=3., qkv_bias=False, qk_scale=None,
-                     attn_drop=0, drop_path_rate=0., **kwargs):
+def outlooker_blocks(
+    block_fn,
+    index,
+    dim,
+    layers,
+    num_heads=1,
+    kernel_size=3,
+    padding=1,
+    stride=1,
+    mlp_ratio=3.0,
+    qkv_bias=False,
+    qk_scale=None,
+    attn_drop=0,
+    drop_path_rate=0.0,
+    **kwargs
+):
     """
     generate outlooker layer in stage1
     return: outlooker layers
     """
     blocks = []
     for block_idx in range(layers[index]):
-        block_dpr = drop_path_rate * (block_idx +
-                                      sum(layers[:index])) / (sum(layers) - 1)
-        blocks.append(block_fn(dim, kernel_size=kernel_size, padding=padding,
-                               stride=stride, num_heads=num_heads, mlp_ratio=mlp_ratio,
-                               qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop,
-                               drop_path=block_dpr))
+        block_dpr = (
+            drop_path_rate * (block_idx + sum(layers[:index])) / (sum(layers) - 1)
+        )
+        blocks.append(
+            block_fn(
+                dim,
+                kernel_size=kernel_size,
+                padding=padding,
+                stride=stride,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                qkv_bias=qkv_bias,
+                qk_scale=qk_scale,
+                attn_drop=attn_drop,
+                drop_path=block_dpr,
+            )
+        )
 
     blocks = nn.Sequential(*blocks)
 
     return blocks
 
 
-def transformer_blocks(block_fn, index, dim, layers, num_heads, mlp_ratio=3.,
-                       qkv_bias=False, qk_scale=None, attn_drop=0,
-                       drop_path_rate=0., **kwargs):
+def transformer_blocks(
+    block_fn,
+    index,
+    dim,
+    layers,
+    num_heads,
+    mlp_ratio=3.0,
+    qkv_bias=False,
+    qk_scale=None,
+    attn_drop=0,
+    drop_path_rate=0.0,
+    **kwargs
+):
     """
     generate transformer layers in stage2
     return: transformer layers
     """
     blocks = []
     for block_idx in range(layers[index]):
-        block_dpr = drop_path_rate * (block_idx +
-                                      sum(layers[:index])) / (sum(layers) - 1)
+        block_dpr = (
+            drop_path_rate * (block_idx + sum(layers[:index])) / (sum(layers) - 1)
+        )
         blocks.append(
-            block_fn(dim, num_heads,
-                     mlp_ratio=mlp_ratio,
-                     qkv_bias=qkv_bias,
-                     qk_scale=qk_scale,
-                     attn_drop=attn_drop,
-                     drop_path=block_dpr))
+            block_fn(
+                dim,
+                num_heads,
+                mlp_ratio=mlp_ratio,
+                qkv_bias=qkv_bias,
+                qk_scale=qk_scale,
+                attn_drop=attn_drop,
+                drop_path=block_dpr,
+            )
+        )
 
     blocks = nn.Sequential(*blocks)
 
@@ -459,24 +643,56 @@ class VOLO(nn.Module):
     --out_kernel, --out_stride, --out_padding: kerner size,
                                                stride, and padding for outlook attention
     """
-    def __init__(self, layers, img_size=224, in_chans=3, num_classes=3, patch_size=8,
-                 stem_hidden_dim=64, embed_dims=None, num_heads=None, downsamples=None,
-                 outlook_attention=None, mlp_ratios=None, qkv_bias=False, qk_scale=None,
-                 drop_rate=0., attn_drop_rate=0., drop_path_rate=0., norm_layer=nn.LayerNorm,
-                 post_layers=None, return_mean=False, return_dense=True, mix_token=True,
-                 pooling_scale=2, out_kernel=3, out_stride=2, out_padding=1):
+
+    def __init__(
+        self,
+        layers,
+        img_size=224,
+        in_chans=3,
+        num_classes=3,
+        patch_size=8,
+        stem_hidden_dim=64,
+        embed_dims=None,
+        num_heads=None,
+        downsamples=None,
+        outlook_attention=None,
+        mlp_ratios=None,
+        qkv_bias=False,
+        qk_scale=None,
+        drop_rate=0.0,
+        attn_drop_rate=0.0,
+        drop_path_rate=0.0,
+        norm_layer=nn.LayerNorm,
+        post_layers=None,
+        return_mean=False,
+        return_dense=True,
+        mix_token=True,
+        pooling_scale=2,
+        out_kernel=3,
+        out_stride=2,
+        out_padding=1,
+    ):
 
         super().__init__()
         self.num_classes = num_classes
-        self.patch_embed = PatchEmbed(stem_conv=True, stem_stride=2, patch_size=patch_size,
-                                      in_chans=in_chans, hidden_dim=stem_hidden_dim,
-                                      embed_dim=embed_dims[0])
+        self.patch_embed = PatchEmbed(
+            stem_conv=True,
+            stem_stride=2,
+            patch_size=patch_size,
+            in_chans=in_chans,
+            hidden_dim=stem_hidden_dim,
+            embed_dim=embed_dims[0],
+        )
 
         # inital positional encoding, we add positional encoding after outlooker blocks
         self.pos_embed = nn.Parameter(
-            torch.zeros(1, img_size // patch_size // pooling_scale,
-                        img_size // patch_size // pooling_scale,
-                        embed_dims[-1]))
+            torch.zeros(
+                1,
+                img_size // patch_size // pooling_scale,
+                img_size // patch_size // pooling_scale,
+                embed_dims[-1],
+            )
+        )
 
         self.pos_drop = nn.Dropout(p=drop_rate)
 
@@ -485,21 +701,38 @@ class VOLO(nn.Module):
         for i in range(len(layers)):
             if outlook_attention[i]:
                 # stage 1
-                stage = outlooker_blocks(Outlooker, i, embed_dims[i], layers,
-                                         downsample=downsamples[i], num_heads=num_heads[i],
-                                         kernel_size=out_kernel, stride=out_stride,
-                                         padding=out_padding, mlp_ratio=mlp_ratios[i],
-                                         qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                         attn_drop=attn_drop_rate, norm_layer=norm_layer)
+                stage = outlooker_blocks(
+                    Outlooker,
+                    i,
+                    embed_dims[i],
+                    layers,
+                    downsample=downsamples[i],
+                    num_heads=num_heads[i],
+                    kernel_size=out_kernel,
+                    stride=out_stride,
+                    padding=out_padding,
+                    mlp_ratio=mlp_ratios[i],
+                    qkv_bias=qkv_bias,
+                    qk_scale=qk_scale,
+                    attn_drop=attn_drop_rate,
+                    norm_layer=norm_layer,
+                )
                 network.append(stage)
             else:
                 # stage 2
-                stage = transformer_blocks(Transformer, i, embed_dims[i], layers,
-                                           num_heads[i], mlp_ratio=mlp_ratios[i],
-                                           qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                           drop_path_rate=drop_path_rate,
-                                           attn_drop=attn_drop_rate,
-                                           norm_layer=norm_layer)
+                stage = transformer_blocks(
+                    Transformer,
+                    i,
+                    embed_dims[i],
+                    layers,
+                    num_heads[i],
+                    mlp_ratio=mlp_ratios[i],
+                    qkv_bias=qkv_bias,
+                    qk_scale=qk_scale,
+                    drop_path_rate=drop_path_rate,
+                    attn_drop=attn_drop_rate,
+                    norm_layer=norm_layer,
+                )
                 network.append(stage)
 
             if downsamples[i]:
@@ -511,24 +744,30 @@ class VOLO(nn.Module):
         # set post block, for example, class attention layers
         self.post_network = None
         if post_layers is not None:
-            self.post_network = nn.ModuleList([
-                get_block(post_layers[i],
-                          dim=embed_dims[-1],
-                          num_heads=num_heads[-1],
-                          mlp_ratio=mlp_ratios[-1],
-                          qkv_bias=qkv_bias,
-                          qk_scale=qk_scale,
-                          attn_drop=attn_drop_rate,
-                          drop_path=0.,
-                          norm_layer=norm_layer)
-                for i in range(len(post_layers))
-            ])
+            self.post_network = nn.ModuleList(
+                [
+                    get_block(
+                        post_layers[i],
+                        dim=embed_dims[-1],
+                        num_heads=num_heads[-1],
+                        mlp_ratio=mlp_ratios[-1],
+                        qkv_bias=qkv_bias,
+                        qk_scale=qk_scale,
+                        attn_drop=attn_drop_rate,
+                        drop_path=0.0,
+                        norm_layer=norm_layer,
+                    )
+                    for i in range(len(post_layers))
+                ]
+            )
             self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dims[-1]))
-            trunc_normal_(self.cls_token, std=.02)
+            trunc_normal_(self.cls_token, std=0.02)
 
         # set output type
         self.return_mean = return_mean  # if yes, return mean, not use class token
-        self.return_dense = return_dense  # if yes, return class token and all feature tokens
+        self.return_dense = (
+            return_dense  # if yes, return class token and all feature tokens
+        )
         if return_dense:
             assert not return_mean, "cannot return both mean and dense"
         self.mix_token = mix_token
@@ -537,21 +776,24 @@ class VOLO(nn.Module):
             self.beta = 1.0
             assert return_dense, "return all tokens if mix_token is enabled"
         if return_dense:
-            self.aux_head = nn.Linear(
-                embed_dims[-1],
-                num_classes) if num_classes > 0 else nn.Identity()
+            self.aux_head = (
+                nn.Linear(embed_dims[-1], num_classes)
+                if num_classes > 0
+                else nn.Identity()
+            )
         self.norm = norm_layer(embed_dims[-1])
 
         # Classifier head
-        self.head = nn.Linear(
-            embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
+        self.head = (
+            nn.Linear(embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
+        )
 
-        trunc_normal_(self.pos_embed, std=.02)
+        trunc_normal_(self.pos_embed, std=0.02)
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
+            trunc_normal_(m.weight, std=0.02)
             if isinstance(m, nn.Linear) and m.bias is not None:
                 nn.init.constant_(m.bias, 0)
         elif isinstance(m, nn.LayerNorm):
@@ -560,15 +802,16 @@ class VOLO(nn.Module):
 
     @torch.jit.ignore
     def no_weight_decay(self):
-        return {'pos_embed', 'cls_token'}
+        return {"pos_embed", "cls_token"}
 
     def get_classifier(self):
         return self.head
 
     def reset_classifier(self, num_classes):
         self.num_classes = num_classes
-        self.head = nn.Linear(
-            self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
+        self.head = (
+            nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
+        )
 
     def forward_embeddings(self, x):
         # patch embedding
@@ -603,13 +846,21 @@ class VOLO(nn.Module):
         # mix token, see token labeling for details.
         if self.mix_token and self.training:
             lam = np.random.beta(self.beta, self.beta)
-            patch_h, patch_w = x.shape[1] // self.pooling_scale, x.shape[
-                2] // self.pooling_scale
+            patch_h, patch_w = (
+                x.shape[1] // self.pooling_scale,
+                x.shape[2] // self.pooling_scale,
+            )
             bbx1, bby1, bbx2, bby2 = rand_bbox(x.size(), lam, scale=self.pooling_scale)
             temp_x = x.clone()
-            sbbx1,sbby1,sbbx2,sbby2=self.pooling_scale*bbx1,self.pooling_scale*bby1,\
-                                    self.pooling_scale*bbx2,self.pooling_scale*bby2
-            temp_x[:, sbbx1:sbbx2, sbby1:sbby2, :] = x.flip(0)[:, sbbx1:sbbx2, sbby1:sbby2, :]
+            sbbx1, sbby1, sbbx2, sbby2 = (
+                self.pooling_scale * bbx1,
+                self.pooling_scale * bby1,
+                self.pooling_scale * bbx2,
+                self.pooling_scale * bby2,
+            )
+            temp_x[:, sbbx1:sbbx2, sbby1:sbby2, :] = x.flip(0)[
+                :, sbbx1:sbbx2, sbby1:sbby2, :
+            ]
             x = temp_x
         else:
             bbx1, bby1, bbx2, bby2 = 0, 0, 0, 0
@@ -636,17 +887,21 @@ class VOLO(nn.Module):
         if not self.training:
             return x_cls + 0.5 * x_aux.max(1)[0]
 
-        if self.mix_token and self.training:  # reverse "mix token", see token labeling for details.
+        if (
+            self.mix_token and self.training
+        ):  # reverse "mix token", see token labeling for details.
             x_aux = x_aux.reshape(x_aux.shape[0], patch_h, patch_w, x_aux.shape[-1])
 
             temp_x = x_aux.clone()
-            temp_x[:, bbx1:bbx2, bby1:bby2, :] = x_aux.flip(0)[:, bbx1:bbx2, bby1:bby2, :]
+            temp_x[:, bbx1:bbx2, bby1:bby2, :] = x_aux.flip(0)[
+                :, bbx1:bbx2, bby1:bby2, :
+            ]
             x_aux = temp_x
 
             x_aux = x_aux.reshape(x_aux.shape[0], patch_h * patch_w, x_aux.shape[-1])
 
         # return these: 1. class token, 2. classes from all feature tokens, 3. bounding box
-        #return x_cls, x_aux, (bbx1, bby1, bbx2, bby2)
+        # return x_cls, x_aux, (bbx1, bby1, bbx2, bby2)
         return x_cls
 
 
@@ -668,19 +923,21 @@ def volo_d1(pretrained=False, num_classes=3, **kwargs):
     embed_dims = [192, 384, 384, 384]
     num_heads = [6, 12, 12, 12]
     mlp_ratios = [3, 3, 3, 3]
-    downsamples = [True, False, False, False] # do downsampling after first block
-    outlook_attention = [True, False, False, False ]
+    downsamples = [True, False, False, False]  # do downsampling after first block
+    outlook_attention = [True, False, False, False]
     # first block is outlooker (stage1), the other three are transformer (stage2)
-    model = VOLO(layers,
-                 embed_dims=embed_dims,
-                 num_heads=num_heads,
-                 mlp_ratios=mlp_ratios,
-                 downsamples=downsamples,
-                 outlook_attention=outlook_attention,
-                 post_layers=['ca', 'ca'],
-                 num_classes=num_classes,
-                 **kwargs)
-    model.default_cfg = default_cfgs['volo']
+    model = VOLO(
+        layers,
+        embed_dims=embed_dims,
+        num_heads=num_heads,
+        mlp_ratios=mlp_ratios,
+        downsamples=downsamples,
+        outlook_attention=outlook_attention,
+        post_layers=["ca", "ca"],
+        num_classes=num_classes,
+        **kwargs
+    )
+    model.default_cfg = default_cfgs["volo"]
     return model
 
 
@@ -695,16 +952,18 @@ def volo_d2(pretrained=False, num_classes=3, **kwargs):
     mlp_ratios = [3, 3, 3, 3]
     downsamples = [True, False, False, False]
     outlook_attention = [True, False, False, False]
-    model = VOLO(layers,
-                 embed_dims=embed_dims,
-                 num_heads=num_heads,
-                 mlp_ratios=mlp_ratios,
-                 downsamples=downsamples,
-                 outlook_attention=outlook_attention,
-                 post_layers=['ca', 'ca'],
-                 num_classes=num_classes,
-                 **kwargs)
-    model.default_cfg = default_cfgs['volo']
+    model = VOLO(
+        layers,
+        embed_dims=embed_dims,
+        num_heads=num_heads,
+        mlp_ratios=mlp_ratios,
+        downsamples=downsamples,
+        outlook_attention=outlook_attention,
+        post_layers=["ca", "ca"],
+        num_classes=num_classes,
+        **kwargs
+    )
+    model.default_cfg = default_cfgs["volo"]
     return model
 
 
@@ -719,16 +978,18 @@ def volo_d3(pretrained=False, num_classes=3, **kwargs):
     mlp_ratios = [3, 3, 3, 3]
     downsamples = [True, False, False, False]
     outlook_attention = [True, False, False, False]
-    model = VOLO(layers,
-                 embed_dims=embed_dims,
-                 num_heads=num_heads,
-                 mlp_ratios=mlp_ratios,
-                 downsamples=downsamples,
-                 outlook_attention=outlook_attention,
-                 post_layers=['ca', 'ca'],
-                 num_classes=num_classes,
-                 **kwargs)
-    model.default_cfg = default_cfgs['volo']
+    model = VOLO(
+        layers,
+        embed_dims=embed_dims,
+        num_heads=num_heads,
+        mlp_ratios=mlp_ratios,
+        downsamples=downsamples,
+        outlook_attention=outlook_attention,
+        post_layers=["ca", "ca"],
+        num_classes=num_classes,
+        **kwargs
+    )
+    model.default_cfg = default_cfgs["volo"]
     return model
 
 
@@ -743,16 +1004,18 @@ def volo_d4(pretrained=False, num_classes=3, **kwargs):
     mlp_ratios = [3, 3, 3, 3]
     downsamples = [True, False, False, False]
     outlook_attention = [True, False, False, False]
-    model = VOLO(layers,
-                 embed_dims=embed_dims,
-                 num_heads=num_heads,
-                 mlp_ratios=mlp_ratios,
-                 downsamples=downsamples,
-                 outlook_attention=outlook_attention,
-                 post_layers=['ca', 'ca'],
-                 num_classes=num_classes,
-                 **kwargs)
-    model.default_cfg = default_cfgs['volo_large']
+    model = VOLO(
+        layers,
+        embed_dims=embed_dims,
+        num_heads=num_heads,
+        mlp_ratios=mlp_ratios,
+        downsamples=downsamples,
+        outlook_attention=outlook_attention,
+        post_layers=["ca", "ca"],
+        num_classes=num_classes,
+        **kwargs
+    )
+    model.default_cfg = default_cfgs["volo_large"]
     return model
 
 
@@ -768,15 +1031,17 @@ def volo_d5(pretrained=False, num_classes=3, **kwargs):
     mlp_ratios = [4, 4, 4, 4]
     downsamples = [True, False, False, False]
     outlook_attention = [True, False, False, False]
-    model = VOLO(layers,
-                 embed_dims=embed_dims,
-                 num_heads=num_heads,
-                 mlp_ratios=mlp_ratios,
-                 downsamples=downsamples,
-                 outlook_attention=outlook_attention,
-                 post_layers=['ca', 'ca'],
-                 stem_hidden_dim=128,
-                 num_classes=num_classes,
-                 **kwargs)
-    model.default_cfg = default_cfgs['volo_large']
+    model = VOLO(
+        layers,
+        embed_dims=embed_dims,
+        num_heads=num_heads,
+        mlp_ratios=mlp_ratios,
+        downsamples=downsamples,
+        outlook_attention=outlook_attention,
+        post_layers=["ca", "ca"],
+        stem_hidden_dim=128,
+        num_classes=num_classes,
+        **kwargs
+    )
+    model.default_cfg = default_cfgs["volo_large"]
     return model
