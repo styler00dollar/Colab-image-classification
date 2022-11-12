@@ -35,7 +35,7 @@ class CheckpointEveryNSteps(pl.Callback):
         self.use_modelcheckpoint_filename = use_modelcheckpoint_filename
         self.save_path = save_path
 
-    def on_batch_end(self, trainer: pl.Trainer, _):
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         """Check if we should save a checkpoint after every train batch"""
         epoch = trainer.current_epoch
         global_step = trainer.global_step
@@ -45,7 +45,8 @@ class CheckpointEveryNSteps(pl.Callback):
             else:
                 filename = f"{self.prefix}_{epoch}_{global_step}.ckpt"
             # ckpt_path = os.path.join(trainer.checkpoint_callback.dirpath, filename)
-            ckpt_path = os.path.join(cfg["path"]["checkpoint_save_path"], filename)
+            ckpt_path = os.path.join(
+                cfg["path"]["checkpoint_save_path"], filename)
             trainer.save_checkpoint(ckpt_path)
 
             # saving normal .pth models
