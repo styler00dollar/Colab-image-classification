@@ -606,6 +606,11 @@ class CustomTrainClass(pl.LightningModule):
                 weight_decay=0.01,
                 eps=1e-6,
             )
+        elif cfg["optimizer"] == "lamb":
+            from optimizer.lamb import Lamb
+
+            optimizer = Lamb(lr=cfg["lr"])
+
         return optimizer
 
     def training_epoch_end(self, training_step_outputs):
