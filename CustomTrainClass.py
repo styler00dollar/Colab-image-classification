@@ -424,6 +424,60 @@ class CustomTrainClass(pl.LightningModule):
 
                 self.netD = nextvit_large(pretrained=True, num_classes=num_classes)
 
+        elif model_train == "hornet":
+            if cfg["model_size"] == "hornet_tiny_7x7":
+                from arch.hornet_arch import hornet_tiny_7x7
+
+                self.netD = hornet_tiny_7x7(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "hornet_tiny_gf":
+                from arch.hornet_arch import hornet_tiny_gf
+
+                self.netD = hornet_tiny_gf(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "hornet_small_7x7":
+                from arch.hornet_arch import hornet_small_7x7
+
+                self.netD = hornet_small_7x7(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "hornet_small_gf":
+                from arch.hornet_arch import hornet_small_gf
+
+                self.netD = hornet_small_gf(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "hornet_base_7x7":
+                from arch.hornet_arch import hornet_base_7x7
+
+                self.netD = hornet_base_7x7(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "hornet_base_gf":
+                from arch.hornet_arch import hornet_base_gf
+
+                self.netD = hornet_base_gf(pretrained=True, num_classes=num_classes)
+
+        elif model_train == "moganet":
+            if cfg["model_size"] == "moganet_xtiny_1k":
+                from arch.moganet_arch import moganet_xtiny_1k
+
+                self.netD = moganet_xtiny_1k(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "moganet_tiny_1k":
+                from arch.moganet_arch import moganet_tiny_1k
+
+                self.netD = moganet_tiny_1k(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "moganet_tiny_1k_sz256":
+                from arch.moganet_arch import moganet_tiny_1k_sz256
+
+                self.netD = moganet_tiny_1k_sz256(
+                    pretrained=True, num_classes=num_classes
+                )
+            if cfg["model_size"] == "moganet_small_1k":
+                from arch.moganet_arch import moganet_small_1k
+
+                self.netD = moganet_small_1k(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "moganet_base_1k":
+                from arch.moganet_arch import moganet_base_1k
+
+                self.netD = moganet_base_1k(pretrained=True, num_classes=num_classes)
+            if cfg["model_size"] == "moganet_large_1k":
+                from arch.moganet_arch import moganet_large_1k
+
+                self.netD = moganet_large_1k(pretrained=True, num_classes=num_classes)
+
         elif model_train == "timm":
             import timm
 

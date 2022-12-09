@@ -13,33 +13,54 @@ from timm.models.registry import register_model
 
 NORM_EPS = 1e-5
 
+
 def merge_pre_bn(module, pre_bn_1, pre_bn_2=None):
-    """ Merge pre BN to reduce inference runtime.
-    """
+    """Merge pre BN to reduce inference runtime."""
     weight = module.weight.data
     if module.bias is None:
-        zeros = torch.zeros(module.out_channels, device=weight.device).type(weight.type())
+        zeros = torch.zeros(module.out_channels, device=weight.device).type(
+            weight.type()
+        )
         module.bias = nn.Parameter(zeros)
     bias = module.bias.data
     if pre_bn_2 is None:
-        assert pre_bn_1.track_running_stats is True, "Unsupport bn_module.track_running_stats is False"
+        assert (
+            pre_bn_1.track_running_stats is True
+        ), "Unsupport bn_module.track_running_stats is False"
         assert pre_bn_1.affine is True, "Unsupport bn_module.affine is False"
 
         scale_invstd = pre_bn_1.running_var.add(pre_bn_1.eps).pow(-0.5)
         extra_weight = scale_invstd * pre_bn_1.weight
-        extra_bias = pre_bn_1.bias - pre_bn_1.weight * pre_bn_1.running_mean * scale_invstd
+        extra_bias = (
+            pre_bn_1.bias - pre_bn_1.weight * pre_bn_1.running_mean * scale_invstd
+        )
     else:
-        assert pre_bn_1.track_running_stats is True, "Unsupport bn_module.track_running_stats is False"
+        assert (
+            pre_bn_1.track_running_stats is True
+        ), "Unsupport bn_module.track_running_stats is False"
         assert pre_bn_1.affine is True, "Unsupport bn_module.affine is False"
 
-        assert pre_bn_2.track_running_stats is True, "Unsupport bn_module.track_running_stats is False"
+        assert (
+            pre_bn_2.track_running_stats is True
+        ), "Unsupport bn_module.track_running_stats is False"
         assert pre_bn_2.affine is True, "Unsupport bn_module.affine is False"
 
         scale_invstd_1 = pre_bn_1.running_var.add(pre_bn_1.eps).pow(-0.5)
         scale_invstd_2 = pre_bn_2.running_var.add(pre_bn_2.eps).pow(-0.5)
 
-        extra_weight = scale_invstd_1 * pre_bn_1.weight * scale_invstd_2 * pre_bn_2.weight
-        extra_bias = scale_invstd_2 * pre_bn_2.weight *(pre_bn_1.bias - pre_bn_1.weight * pre_bn_1.running_mean * scale_invstd_1 - pre_bn_2.running_mean) + pre_bn_2.bias
+        extra_weight = (
+            scale_invstd_1 * pre_bn_1.weight * scale_invstd_2 * pre_bn_2.weight
+        )
+        extra_bias = (
+            scale_invstd_2
+            * pre_bn_2.weight
+            * (
+                pre_bn_1.bias
+                - pre_bn_1.weight * pre_bn_1.running_mean * scale_invstd_1
+                - pre_bn_2.running_mean
+            )
+            + pre_bn_2.bias
+        )
 
     if isinstance(module, nn.Linear):
         extra_bias = weight @ extra_bias
@@ -54,6 +75,7 @@ def merge_pre_bn(module, pre_bn_1, pre_bn_2=None):
 
     module.weight.data = weight
     module.bias.data = bias
+
 
 class ConvBNReLU(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride, groups=1):
@@ -510,7 +532,11 @@ class NextViT(nn.Module):
 @register_model
 def nextvit_small(pretrained=False, pretrained_cfg=None, num_classes=1000, **kwargs):
     model = NextViT(
-        stem_chs=[64, 32, 64], depths=[3, 4, 10, 3], path_dropout=0.1, num_classes=num_classes, **kwargs
+        stem_chs=[64, 32, 64],
+        depths=[3, 4, 10, 3],
+        path_dropout=0.1,
+        num_classes=num_classes,
+        **kwargs
     )
     return model
 
@@ -518,7 +544,11 @@ def nextvit_small(pretrained=False, pretrained_cfg=None, num_classes=1000, **kwa
 @register_model
 def nextvit_base(pretrained=False, pretrained_cfg=None, num_classes=1000, **kwargs):
     model = NextViT(
-        stem_chs=[64, 32, 64], depths=[3, 4, 20, 3], path_dropout=0.2, num_classes=num_classes, **kwargs
+        stem_chs=[64, 32, 64],
+        depths=[3, 4, 20, 3],
+        path_dropout=0.2,
+        num_classes=num_classes,
+        **kwargs
     )
     return model
 
@@ -526,6 +556,10 @@ def nextvit_base(pretrained=False, pretrained_cfg=None, num_classes=1000, **kwar
 @register_model
 def nextvit_large(pretrained=False, pretrained_cfg=None, num_classes=1000, **kwargs):
     model = NextViT(
-        stem_chs=[64, 32, 64], depths=[3, 4, 30, 3], path_dropout=0.2, num_classes=num_classes, **kwargs
+        stem_chs=[64, 32, 64],
+        depths=[3, 4, 30, 3],
+        path_dropout=0.2,
+        num_classes=num_classes,
+        **kwargs
     )
     return model

@@ -1,5 +1,5 @@
 print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
-use_amp: False
+use_amp: True
 gpus: 1
 use_swa: False
 save_step_frequency: 5000
@@ -10,24 +10,24 @@ std: [0.2520, 0.2507, 0.2417]
 
 optimizer: AdamP # Adam | AdamP | SGDP | MADGRAD (pip install madgrad)
 lr: 0.0001
-batch_size: 2 # 62
+batch_size: 50 # 62
 aug: MuAugment # gridmix, cutmix, MuAugment, None
 loss: normal # normal | CenterLoss
-size: 256 # image size
+size: 224 # 256 # image size
 precision: 32 # 32
 progress_bar_refresh_rate: 20
-default_root_dir: "/home/user/Colab-image-classification/test/"
+default_root_dir: "/home/user/Desktop/Colab-image-classification/"
 
 path:
   # pretrain
-  pretrain:
+  pretrain: 
   checkpoint_path: 
 
-  training_path: '/home/user/Colab-image-classification/test/' # input folder
-  validation_path: '/home/user/Colab-image-classification/test/data' # validation folder
-  test_path: '/home/user/Colab-image-classification/test/data' # validation folder / test.py
-  log_path: "/home/user/Colab-image-classification/test/"
-  checkpoint_save_path: "/home/user/Colab-image-classification/test/" 
+  training_path: '/home/user/Desktop/dataset/' # input folder
+  validation_path: '/home/user/Desktop/dataset_test/' # validation folder
+  test_path: '/home/user/Desktop/dataset_test/' # validation folder / test.py
+  log_path: "/home/user/Desktop/Colab-image-classification/"
+  checkpoint_save_path: "/home/user/Desktop/Colab-image-classification/" 
 
 
 # which model architecture to train
@@ -102,8 +102,16 @@ path:
 #model_size: poolformer_s12 # poolformer_s12 | poolformer_s24 | poolformer_s36 | poolformer_m36 | poolformer_m48
 
 # next vit (2022)
-model_train: next_vit
-model_size: small # small | base | large
+#model_train: next_vit
+#model_size: small # small | base | large
+
+# hornet
+model_train: hornet
+model_size: hornet_tiny_7x7 # hornet_tiny_7x7 | hornet_small_7x7 | hornet_small_gf | hornet_base_7x7 | hornet_base_gf
+
+# moganet
+#model_train: moganet
+#model_size: moganet_xtiny_1k # moganet_xtiny_1k | moganet_tiny_1k | moganet_tiny_1k_sz256 | moganet_small_1k | moganet_base_1k | moganet_large_1k
 
 #################
 
