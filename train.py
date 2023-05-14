@@ -32,42 +32,29 @@ def main():
     if cfg["use_amp"] == False:
         trainer = pl.Trainer(
             num_sanity_val_steps=0,
-            #stochastic_weight_avg=cfg["use_swa"],
+            # stochastic_weight_avg=cfg["use_swa"],
+            accelerator="gpu",
             log_every_n_steps=50,
-            resume_from_checkpoint=cfg["path"]["checkpoint_path"],
-            check_val_every_n_epoch=9999999,
+            check_val_every_n_epoch=None,
             logger=None,
-            gpus=cfg["gpus"],
             max_epochs=-1,
-            #progress_bar_refresh_rate=cfg["progress_bar_refresh_rate"],
+            # progress_bar_refresh_rate=cfg["progress_bar_refresh_rate"],
             default_root_dir=cfg["default_root_dir"],
-            callbacks=[
-                CheckpointEveryNSteps(
-                    save_step_frequency=cfg["save_step_frequency"],
-                    save_path=cfg["path"]["checkpoint_save_path"],
-                )
-            ],
+            val_check_interval=cfg["save_step_frequency"],
         )
     if cfg["use_amp"] == True:
         trainer = pl.Trainer(
             num_sanity_val_steps=0,
-            #stochastic_weight_avg=cfg["use_swa"],
+            # stochastic_weight_avg=cfg["use_swa"],
+            accelerator="gpu",
             log_every_n_steps=50,
-            resume_from_checkpoint=cfg["path"]["checkpoint_path"],
-            check_val_every_n_epoch=9999999,
+            check_val_every_n_epoch=None,
             logger=None,
-            gpus=cfg["gpus"],
             precision=16,
-            amp_level="O1",
             max_epochs=-1,
-            #progress_bar_refresh_rate=cfg["progress_bar_refresh_rate"],
+            # progress_bar_refresh_rate=cfg["progress_bar_refresh_rate"],
             default_root_dir=cfg["default_root_dir"],
-            callbacks=[
-                CheckpointEveryNSteps(
-                    save_step_frequency=cfg["save_step_frequency"],
-                    save_path=cfg["path"]["checkpoint_save_path"],
-                )
-            ],
+            val_check_interval=cfg["save_step_frequency"],
         )
 
     if cfg["path"]["pretrain"]:

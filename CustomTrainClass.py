@@ -478,6 +478,44 @@ class CustomTrainClass(pl.LightningModule):
 
                 self.netD = moganet_large_1k(pretrained=True, num_classes=num_classes)
 
+        elif model_train == "efficientvit":
+            if cfg["model_size"] == "m0":
+                from arch.efficientvit_arch import EfficientViT_M0
+
+                self.netD = EfficientViT_M0(
+                    pretrained="efficientvit_m0", num_classes=num_classes
+                )
+            if cfg["model_size"] == "m1":
+                from arch.efficientvit_arch import EfficientViT_M1
+
+                self.netD = EfficientViT_M1(
+                    pretrained="efficientvit_m1", num_classes=num_classes
+                )
+            if cfg["model_size"] == "m2":
+                from arch.efficientvit_arch import EfficientViT_M2
+
+                self.netD = EfficientViT_M2(
+                    pretrained="efficientvit_m2", num_classes=num_classes
+                )
+            if cfg["model_size"] == "m3":
+                from arch.efficientvit_arch import EfficientViT_M3
+
+                self.netD = EfficientViT_M3(
+                    pretrained="efficientvit_m3", num_classes=num_classes
+                )
+            if cfg["model_size"] == "m4":
+                from arch.efficientvit_arch import EfficientViT_M4
+
+                self.netD = EfficientViT_M4(
+                    pretrained="efficientvit_m4", num_classes=num_classes
+                )
+            if cfg["model_size"] == "m5":
+                from arch.efficientvit_arch import EfficientViT_M5
+
+                self.netD = EfficientViT_M5(
+                    pretrained="efficientvit_m5", num_classes=num_classes
+                )
+
         elif model_train == "timm":
             import timm
 
@@ -609,11 +647,11 @@ class CustomTrainClass(pl.LightningModule):
         elif cfg["optimizer"] == "lamb":
             from optimizer.lamb import Lamb
 
-            optimizer = Lamb(lr=cfg["lr"])
+            optimizer = Lamb(self.netD.parameters(), lr=cfg["lr"])
 
         return optimizer
 
-    def training_epoch_end(self, training_step_outputs):
+    def on_training_epoch_end(self):
         if cfg["print_training_epoch_end_metrics"] == False:
             loss_mean = np.mean(self.losses)
             # accuracy_mean = torch.mean(self.accuracy)
@@ -634,11 +672,6 @@ class CustomTrainClass(pl.LightningModule):
         self.losses = []
         self.accuracy = []
 
-        torch.save(
-            self.netD.state_dict(),
-            f"Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth",
-        )
-
     def validation_step(self, train_batch, train_idx):
         # print(train_batch[0].shape)
         preds = self.netD(train_batch[0])
@@ -649,7 +682,7 @@ class CustomTrainClass(pl.LightningModule):
 
         self.accuracy_val.append(calculate_accuracy(preds, train_batch[1]).item())
 
-    def validation_epoch_end(self, val_step_outputs):
+    def on_validation_epoch_end(self):
         loss_mean = np.mean(self.losses_val)
         accuracy_mean = mean(self.accuracy_val)
 
@@ -664,6 +697,12 @@ class CustomTrainClass(pl.LightningModule):
 
         self.losses_val = []
         self.accuracy_val = []
+
+        print(f"saving Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth")
+        torch.save(
+            self.netD.state_dict(),
+            f"Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth",
+        )
 
     def test_step(self, train_batch, train_idx):
         preds = self.netD(train_batch[0])
