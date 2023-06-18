@@ -8,26 +8,26 @@ save_step_frequency: 10000
 means: [0.7032, 0.6346, 0.6234]
 std: [0.2520, 0.2507, 0.2417]
 
-optimizer: lamb # Adam | AdamP | SGDP | MADGRAD (pip install madgrad) | lamb
+optimizer: AdamP # Adam | AdamP | SGDP | MADGRAD (pip install madgrad) | lamb
 lr: 0.0001
-batch_size: 150
-aug: MuAugment # gridmix, cutmix, MuAugment, None
+batch_size: 10
+aug: RandAugment # gridmix, cutmix, MuAugment, None | RandAugment
 loss: normal # normal | CenterLoss
-size: 224 # 256 # image size
-precision: 32 # 32
+size: 448 # 256 # image size
+precision: 16 # 32
 progress_bar_refresh_rate: 20
-default_root_dir: "/home/user/Colab-image-classification/train/"
+default_root_dir: "/home/user/Schreibtisch/Colab-image-classification/train/"
 
 path:
   # pretrain
   pretrain: 
   checkpoint_path: 
 
-  training_path: '/home/user/Colab-image-classification/train/data/' # input folder
-  validation_path: '/home/user/Colab-image-classification/train/data/' # validation folder
-  test_path: '/home/user/Colab-image-classification/train/data/' # validation folder / test.py
-  log_path: "/home/user/Colab-image-classification/train/"
-  checkpoint_save_path: "/home/user/Colab-image-classification/train/" 
+  training_path: '/home/user/Schreibtisch/Colab-image-classification/class_test/' # input folder
+  validation_path: '/home/user/Schreibtisch/Colab-image-classification/class_test/' # validation folder
+  test_path: '/home/user/Schreibtisch/Colab-image-classification/class_test/' # validation folder / test.py
+  log_path: "/home/user/Schreibtisch/Colab-image-classification/train/"
+  checkpoint_save_path: "/home/user/Schreibtisch/Colab-image-classification/train/" 
 
 
 # which model architecture to train
@@ -48,9 +48,10 @@ path:
 # pip install timm
 # you can loop up models here: https://rwightman.github.io/pytorch-image-models/
 # Example: "tf_efficientnetv2_s"
-#model_train: timm
+model_train: timm
 #model_choise: 'tf_efficientnetv2_b0'
 #model_choise: "swin_tiny_patch4_window7_224"
+model_choise: "eva02_large_patch14_448.mim_m38m_ft_in22k_in1k"
 
 #################
 
@@ -114,8 +115,8 @@ path:
 #model_size: moganet_xtiny_1k # moganet_xtiny_1k | moganet_tiny_1k | moganet_tiny_1k_sz256 | moganet_small_1k | moganet_base_1k | moganet_large_1k
 
 # efficientvit (2023) (224px)
-model_train: efficientvit
-model_size: m5 # m0, m1, m2, m3, m4, m5 
+#model_train: efficientvit
+#model_size: m5 # m0, m1, m2, m3, m4, m5 
 #################
 
 num_classes: 2 # Warning: Some do require amount classes + 1 as num_classes. 

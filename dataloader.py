@@ -2,7 +2,11 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 import torchvision.datasets as datasets
+from RandAugment import RandAugment
+import yaml
 
+with open("config.yaml", "r") as ymlfile:
+    cfg = yaml.safe_load(ymlfile)
 
 class DataModule(pl.LightningDataModule):
     def __init__(
@@ -48,6 +52,9 @@ class DataModule(pl.LightningDataModule):
                 transforms.Normalize(mean=self.means, std=self.std),
             ]
         )
+
+        if cfg["aug"] == "RandAugment":
+            img_tf.transforms.insert(0, RandAugment(2, 2))
 
         self.DS_train = datasets.ImageFolder(root=self.training_dir, transform=img_tf)
         self.DS_validation = datasets.ImageFolder(

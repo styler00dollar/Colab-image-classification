@@ -606,7 +606,7 @@ class CustomTrainClass(pl.LightningModule):
         writer.add_scalar("loss", loss, self.trainer.global_step)
 
         if cfg["print_training_epoch_end_metrics"] == False:
-            if self.aug == None or self.aug == "centerloss" or self.aug == "MuAugment":
+            if self.aug in [None, "centerloss", "MuAugment", "RandAugment"]:
                 acc = calculate_accuracy(preds, train_batch[1])
             else:
                 acc = calc_accuracy_gridmix(preds, train_batch[1])
@@ -656,7 +656,7 @@ class CustomTrainClass(pl.LightningModule):
             loss_mean = np.mean(self.losses)
             # accuracy_mean = torch.mean(self.accuracy)
 
-        if self.aug == None or self.aug == "centerloss" or self.aug == "MuAugment":
+        if self.aug in [None, "centerloss", "MuAugment", "RandAugment"]:
             accuracy_mean = torch.mean(torch.stack(self.accuracy))
         else:
             accuracy_mean = np.mean(self.accuracy)

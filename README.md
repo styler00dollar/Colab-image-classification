@@ -4,7 +4,7 @@ Combines different architectures, losses, optimizers and augmentations for image
 
 Dependencies:
 ```
-pip install albumentations scikit-learn kornia efficientnet_pytorch x_transformers vit-pytorch swin-transformer-pytorch adamp tensorboardX torchvision timm madgrad pytorch_lightning
+pip install albumentations scikit-learn kornia efficientnet_pytorch x_transformers vit-pytorch swin-transformer-pytorch adamp tensorboardX torchvision timm madgrad pytorch_lightning git+https://github.com/ildoonet/pytorch-randaugment
 ```
 
 Old Colabs can be found in the `depricated` branch.
