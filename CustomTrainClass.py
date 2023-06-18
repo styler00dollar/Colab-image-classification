@@ -649,6 +649,16 @@ class CustomTrainClass(pl.LightningModule):
 
             optimizer = Lamb(self.netD.parameters(), lr=cfg["lr"])
 
+        elif cfg["optimizer"] == "Adan":
+            from optimizer.adan import Adan
+
+            optimizer = Adan(
+                self.netD.parameters(),
+                lr=cfg["lr"],
+                betas=(0.02, 0.08, 0.01),
+                weight_decay=0.02,
+            )
+
         return optimizer
 
     def on_training_epoch_end(self):
@@ -698,7 +708,9 @@ class CustomTrainClass(pl.LightningModule):
         self.losses_val = []
         self.accuracy_val = []
 
-        print(f"saving Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth")
+        print(
+            f"saving Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth"
+        )
         torch.save(
             self.netD.state_dict(),
             f"Checkpoint_{self.current_epoch}_{self.global_step}_loss_{loss_mean:3f}_acc_{accuracy_mean:3f}_D.pth",

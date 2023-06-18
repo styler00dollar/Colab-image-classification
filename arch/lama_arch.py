@@ -577,7 +577,6 @@ class SpectralTransform(nn.Module):
         )
 
     def forward(self, x):
-
         x = self.downsample(x)
         x = self.conv1(x)
         output = self.fu(x)

@@ -8,7 +8,7 @@ save_step_frequency: 10000
 means: [0.7032, 0.6346, 0.6234]
 std: [0.2520, 0.2507, 0.2417]
 
-optimizer: AdamP # Adam | AdamP | SGDP | MADGRAD (pip install madgrad) | lamb
+optimizer: Adan # Adam | AdamP | SGDP | MADGRAD (pip install madgrad) | lamb | Adan
 lr: 0.0001
 batch_size: 10
 aug: RandAugment # gridmix, cutmix, MuAugment, None | RandAugment

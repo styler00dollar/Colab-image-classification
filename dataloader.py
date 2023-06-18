@@ -8,6 +8,7 @@ import yaml
 with open("config.yaml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
 
+
 class DataModule(pl.LightningDataModule):
     def __init__(
         self,

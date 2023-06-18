@@ -84,7 +84,6 @@ vgg19_config = [
 
 
 def get_vgg_layers(config, batch_norm):
-
     layers = []
     in_channels = 3
 

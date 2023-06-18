@@ -672,7 +672,6 @@ class VOLO(nn.Module):
         out_stride=2,
         out_padding=1,
     ):
-
         super().__init__()
         self.num_classes = num_classes
         self.patch_embed = PatchEmbed(

@@ -281,7 +281,6 @@ class WindowAttention(nn.Module):
         proj_drop=0.0,
         pool_method="none",
     ):
-
         super().__init__()
         self.dim = dim
         self.expand_size = expand_size
@@ -1146,7 +1145,6 @@ class BasicLayer(nn.Module):
         use_layerscale=False,
         layerscale_value=1e-4,
     ):
-
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution

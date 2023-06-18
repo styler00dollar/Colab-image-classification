@@ -45,8 +45,7 @@ class CheckpointEveryNSteps(pl.Callback):
             else:
                 filename = f"{self.prefix}_{epoch}_{global_step}.ckpt"
             # ckpt_path = os.path.join(trainer.checkpoint_callback.dirpath, filename)
-            ckpt_path = os.path.join(
-                cfg["path"]["checkpoint_save_path"], filename)
+            ckpt_path = os.path.join(cfg["path"]["checkpoint_save_path"], filename)
             trainer.save_checkpoint(ckpt_path)
 
             # saving normal .pth models

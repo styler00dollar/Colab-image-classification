@@ -34,7 +34,6 @@ class cutmix(nn.Module):
         crop_area_ratio: t.Union[float, t.Tuple[float, float]] = 1.0,
         crop_aspect_ratio: t.Union[float, t.Tuple[float, float]] = 1.0,
     ):
-
         super().__init__()
         self.alpha = alpha
         self.n_holes_x = n_holes_x
