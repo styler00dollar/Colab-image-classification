@@ -522,6 +522,10 @@ class CustomTrainClass(pl.LightningModule):
                 cfg["model_choise"], num_classes=num_classes, pretrained=True
             )
 
+        if cfg["compile"]:
+            print("Using torch.compile")
+            self.netD = torch.compile(self.netD)
+
         # weights_init(self.netD, 'kaiming') #only use this if there is no pretrain
 
         if aug == "gridmix":

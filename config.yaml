@@ -1,6 +1,7 @@
 print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
 gpus: 1
 use_swa: True
+compile: True
 max_epochs: 200
 save_step_frequency: 10000
 
