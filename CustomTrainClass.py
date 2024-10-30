@@ -30,7 +30,7 @@ class CustomTrainClass(pl.LightningModule):
         aug=None,
     ):
         super().__init__()
-
+        self.lr = cfg["lr"]
         #############################################
         if model_train == "efficientnet-b0":
             self.netD = EfficientNet.from_pretrained(
@@ -579,10 +579,12 @@ class CustomTrainClass(pl.LightningModule):
         return self.netD(x)
 
     def training_step(self, train_batch, batch_idx):
+        """
         if self.trainer.global_step != 0:
             if self.iter_check == self.trainer.global_step:
                 self.trainer.global_step += 1
             self.iter_check = self.trainer.global_step
+        """
 
         if self.aug == "gridmix" or self.aug == "cutmix":
             train_batch[0], train_batch[1] = self.criterion.get_sample(
@@ -627,14 +629,14 @@ class CustomTrainClass(pl.LightningModule):
 
             optimizer = adamw_sf(
                 self.netD.parameters(),
-                lr=cfg["lr"],
+                lr=self.lr,
             )
         elif cfg["optimizer"] == "adamw_win":
             from optimizer.adamw_win import adamw_win
 
             optimizer = adamw_win(
                 self.netD.parameters(),
-                lr=cfg["lr"],
+                lr=self.lr,
             )
 
         elif cfg["optimizer"] == "adan_sf":
@@ -642,23 +644,22 @@ class CustomTrainClass(pl.LightningModule):
 
             optimizer = adan_sf(
                 self.netD.parameters(),
-                lr=cfg["lr"],
+                lr=self.lr,
             )
         elif cfg["optimizer"] == "adan":
             from optimizer.adan import adan
 
             optimizer = adan(
                 self.netD.parameters(),
-                lr=cfg["lr"],
+                lr=self.lr,
             )
         elif cfg["optimizer"] == "lamb":
             from optimizer.lamb import lamb
 
             optimizer = lamb(
                 self.netD.parameters(),
-                lr=cfg["lr"],
+                lr=self.lr,
             )
-
         return optimizer
 
     def on_training_epoch_end(self):

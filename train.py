@@ -31,11 +31,15 @@ def main():
         aug=cfg["aug"],
     )
 
+    callbacks = []
+
     if cfg["use_swa"]:
         print("Using SWA")
-        callbacks = [pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2)]
-    else:
-        callbacks = []
+        callbacks.append(pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2))
+
+    if cfg["lr_finder"]:
+        print("Looking for LR")
+        callbacks.append(pl.callbacks.LearningRateFinder())
 
     trainer = pl.Trainer(
         num_sanity_val_steps=0,

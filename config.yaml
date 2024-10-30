@@ -2,6 +2,7 @@ print_training_epoch_end_metrics: False # RAM requirements for big datasets are 
 gpus: 1
 use_swa: True
 compile: True
+lr_finder: True
 max_epochs: 200
 save_step_frequency: 10000
 
