@@ -2,7 +2,7 @@
 4_vgg.ipynb (13-4-20)
 https://github.com/styler00dollar/Colab-image-classification/blob/master/4_vgg.ipynb
 """
-import torch
+
 import torchvision.models as models
 import torch.nn as nn
 
@@ -131,7 +131,7 @@ model.load_state_dict(pretrained_model.state_dict())
 def create_vgg11(num_classes, pretrained=True):
     vgg11_layers = get_vgg_layers(vgg16_config, batch_norm=True)
     model = VGG(vgg11_layers, num_classes)
-    if pretrained == True:
+    if pretrained is True:
         pretrained_model = models.vgg11_bn(pretrained=True)
         pretrained_model.classifier[-1]
         IN_FEATURES = pretrained_model.classifier[-1].in_features
@@ -143,9 +143,9 @@ def create_vgg11(num_classes, pretrained=True):
 
 
 def create_vgg13(num_classes, pretrained=True):
-    vgg16_layers = get_vgg_layers(vgg13_config, batch_norm=True)
+    get_vgg_layers(vgg13_config, batch_norm=True)
     model = VGG(vgg13_layers, num_classes)
-    if pretrained == True:
+    if pretrained is True:
         pretrained_model = models.vgg13_bn(pretrained=True)
         pretrained_model.classifier[-1]
         IN_FEATURES = pretrained_model.classifier[-1].in_features
@@ -159,7 +159,7 @@ def create_vgg13(num_classes, pretrained=True):
 def create_vgg16(num_classes, pretrained=True):
     vgg16_layers = get_vgg_layers(vgg16_config, batch_norm=True)
     model = VGG(vgg16_layers, num_classes)
-    if pretrained == True:
+    if pretrained is True:
         pretrained_model = models.vgg16_bn(pretrained=True)
         pretrained_model.classifier[-1]
         IN_FEATURES = pretrained_model.classifier[-1].in_features
@@ -173,7 +173,7 @@ def create_vgg16(num_classes, pretrained=True):
 def create_vgg19(num_classes, pretrained=True):
     vgg19_layers = get_vgg_layers(vgg19_config, batch_norm=True)
     model = VGG(vgg19_layers, num_classes)
-    if pretrained == True:
+    if pretrained is True:
         pretrained_model = models.vgg19_bn(pretrained=True)
         pretrained_model.classifier[-1]
         IN_FEATURES = pretrained_model.classifier[-1].in_features

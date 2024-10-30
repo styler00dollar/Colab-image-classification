@@ -2,9 +2,9 @@
 4-Dez-21
 https://github.com/whai362/PVT/blob/v2/classification/pvt_v2.py
 """
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from functools import partial
 
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_

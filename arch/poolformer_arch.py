@@ -2,6 +2,7 @@
 7-Dez-21
 https://github.com/sail-sg/poolformer/blob/main/models/poolformer.py
 """
+
 # Copyright 2021 Garena Online Private Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

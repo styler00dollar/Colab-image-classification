@@ -168,7 +168,7 @@ class BaseDiscriminator(nn.Module):
         Predict scores and get intermediate activations. Useful for feature matching loss
         :return tuple (scores, list of intermediate activations)
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 def get_conv_block_ctor(kind="default"):
@@ -396,7 +396,7 @@ class FourierUnit(nn.Module):
                 align_corners=False,
             )
 
-        r_size = x.size()
+        x.size()
         # (batch, c, h, w/2+1, 2)
         fft_dim = (-3, -2, -1) if self.ffc3d else (-2, -1)
         ffted = torch.fft.rfftn(x, dim=fft_dim, norm=self.fft_norm)
@@ -500,7 +500,7 @@ class SeparableFourierUnit(nn.Module):
     def process_branch(self, x, conv, bn):
         batch = x.shape[0]
 
-        r_size = x.size()
+        x.size()
         # (batch, c, h, w/2+1, 2)
         ffted = torch.fft.rfft(x, norm="ortho")
         ffted = torch.stack((ffted.real, ffted.imag), dim=-1)

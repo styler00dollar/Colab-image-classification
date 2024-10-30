@@ -211,7 +211,6 @@ def main():
     from torch.autograd import Variable
 
     import torch.onnx
-    import torchvision
     import torch
 
     dummy_input = Variable(

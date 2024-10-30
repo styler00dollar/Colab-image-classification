@@ -1,9 +1,12 @@
 from dataloader import DataModule
 from CustomTrainClass import CustomTrainClass
 import pytorch_lightning as pl
-from checkpoint import CheckpointEveryNSteps
 
 import yaml
+
+import torch
+
+torch.set_float32_matmul_precision("medium")
 
 with open("config.yaml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
@@ -28,34 +31,24 @@ def main():
         aug=cfg["aug"],
     )
 
-    # skipping validation with limit_val_batches=0
-    if cfg["use_amp"] == False:
-        trainer = pl.Trainer(
-            num_sanity_val_steps=0,
-            # stochastic_weight_avg=cfg["use_swa"],
-            accelerator="gpu",
-            log_every_n_steps=50,
-            check_val_every_n_epoch=None,
-            logger=None,
-            max_epochs=-1,
-            # progress_bar_refresh_rate=cfg["progress_bar_refresh_rate"],
-            default_root_dir=cfg["default_root_dir"],
-            val_check_interval=cfg["save_step_frequency"],
-        )
-    if cfg["use_amp"] == True:
-        trainer = pl.Trainer(
-            num_sanity_val_steps=0,
-            # stochastic_weight_avg=cfg["use_swa"],
-            accelerator="gpu",
-            log_every_n_steps=50,
-            check_val_every_n_epoch=None,
-            logger=None,
-            precision=16,
-            max_epochs=-1,
-            # progress_bar_refresh_rate=cfg["progress_bar_refresh_rate"],
-            default_root_dir=cfg["default_root_dir"],
-            val_check_interval=cfg["save_step_frequency"],
-        )
+    if cfg["use_swa"]:
+        print("Using SWA")
+        callbacks = [pl.callbacks.StochasticWeightAveraging(swa_lrs=1e-2)]
+    else:
+        callbacks = []
+
+    trainer = pl.Trainer(
+        num_sanity_val_steps=0,
+        callbacks=callbacks,
+        accelerator="gpu",
+        log_every_n_steps=50,
+        check_val_every_n_epoch=None,
+        logger=None,
+        precision=cfg["precision"],
+        max_epochs=cfg["max_epochs"],
+        default_root_dir=cfg["default_root_dir"],
+        val_check_interval=cfg["save_step_frequency"],
+    )
 
     if cfg["path"]["pretrain"]:
         import torch

@@ -535,8 +535,6 @@ class EfficientViT(torch.nn.Module):
 Build the EfficientViT model family
 """
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from timm.models.registry import register_model
 
 EfficientViT_m0 = {
@@ -616,7 +614,7 @@ def EfficientViT_M0(
         pretrained = _checkpoint_url_format.format(pretrained)
         checkpoint = torch.hub.load_state_dict_from_url(pretrained, map_location="cpu")
         d = checkpoint["model"]
-        D = model.state_dict()
+        model.state_dict()
 
         if num_classes != 1000:
             new_model_D = {}
@@ -646,7 +644,7 @@ def EfficientViT_M1(
         pretrained = _checkpoint_url_format.format(pretrained)
         checkpoint = torch.hub.load_state_dict_from_url(pretrained, map_location="cpu")
         d = checkpoint["model"]
-        D = model.state_dict()
+        model.state_dict()
 
         if num_classes != 1000:
             new_model_D = {}
@@ -676,7 +674,7 @@ def EfficientViT_M2(
         pretrained = _checkpoint_url_format.format(pretrained)
         checkpoint = torch.hub.load_state_dict_from_url(pretrained, map_location="cpu")
         d = checkpoint["model"]
-        D = model.state_dict()
+        model.state_dict()
 
         if num_classes != 1000:
             new_model_D = {}
@@ -706,7 +704,7 @@ def EfficientViT_M3(
         pretrained = _checkpoint_url_format.format(pretrained)
         checkpoint = torch.hub.load_state_dict_from_url(pretrained, map_location="cpu")
         d = checkpoint["model"]
-        D = model.state_dict()
+        model.state_dict()
 
         if num_classes != 1000:
             new_model_D = {}
@@ -736,7 +734,7 @@ def EfficientViT_M4(
         pretrained = _checkpoint_url_format.format(pretrained)
         checkpoint = torch.hub.load_state_dict_from_url(pretrained, map_location="cpu")
         d = checkpoint["model"]
-        D = model.state_dict()
+        model.state_dict()
 
         if num_classes != 1000:
             new_model_D = {}
@@ -766,7 +764,7 @@ def EfficientViT_M5(
         pretrained = _checkpoint_url_format.format(pretrained)
         checkpoint = torch.hub.load_state_dict_from_url(pretrained, map_location="cpu")
         d = checkpoint["model"]
-        D = model.state_dict()
+        model.state_dict()
 
         if num_classes != 1000:
             new_model_D = {}

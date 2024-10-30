@@ -5,10 +5,10 @@ https://github.com/IlyaDobrynin/GridMixup/blob/main/gridmix/gridmix_pytorch.py
 cutmix.py (15-4-20)
 https://github.com/hysts/pytorch_cutmix/blob/master/cutmix.py
 """
+
 import typing as t
 import random
 import numpy as np
-import math
 import torch
 from torch import nn
 

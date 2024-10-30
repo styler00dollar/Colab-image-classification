@@ -2,13 +2,14 @@
 6_ResNeSt.ipynb (13-4-20)
 https://github.com/styler00dollar/Colab-image-classification/blob/master/6_ResNeSt.ipynb
 """
+
 # https://github.com/zhanghang1989/ResNeSt/blob/11eb547225c6b98bdf6cab774fb58dffc53362b1/resnest/torch/splat.py
 """Split-Attention"""
 
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.nn import Conv2d, Module, Linear, BatchNorm2d, ReLU
+from torch.nn import Conv2d, Module, ReLU
 from torch.nn.modules.utils import _pair
 
 __all__ = ["SplAtConv2d"]
@@ -148,7 +149,6 @@ class rSoftMax(nn.Module):
 ##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """ResNet variants"""
 import math
-import torch
 import torch.nn as nn
 
 # from .splat import SplAtConv2d
@@ -630,7 +630,6 @@ class ResNet(nn.Module):
 
 
 # https://github.com/zhanghang1989/ResNeSt/blob/master/resnest/torch/resnest.py
-import torch
 
 # from .resnet import ResNet, Bottleneck
 

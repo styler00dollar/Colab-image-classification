@@ -3,10 +3,11 @@
 https://github.com/bytedance/Next-ViT/blob/main/classification/nextvit.py
 https://github.com/bytedance/Next-ViT/blob/9fbaf7bd39490cad12c1f64655bb51b41c7f1da4/classification/utils.py
 """
+
 # Copyright (c) ByteDance Inc. All rights reserved.
 import torch
-from torch import nn, einsum
-from einops import rearrange, repeat
+from torch import nn
+from einops import rearrange
 from functools import partial
 from timm.models.layers import DropPath, trunc_normal_
 from timm.models.registry import register_model

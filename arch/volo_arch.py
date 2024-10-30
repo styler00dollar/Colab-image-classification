@@ -2,6 +2,7 @@
 3-Dez-21
 https://github.com/sail-sg/volo/blob/main/models/volo.py
 """
+
 # Copyright 2021 Sea Limited.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +24,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from timm.models.layers import DropPath, to_2tuple, trunc_normal_
+from timm.models.layers import DropPath, trunc_normal_
 from timm.models.registry import register_model
 import math
 import numpy as np

@@ -4,6 +4,7 @@ https://github.com/adam-mehdi/MuarAugment/blob/master/muar/augmentations.py
 https://github.com/adam-mehdi/MuarAugment/blob/master/muar/loss.py
 https://github.com/adam-mehdi/MuarAugment/blob/master/muar/transform_lists.py
 """
+
 import albumentations as A
 import kornia.augmentation as K
 
@@ -128,7 +129,6 @@ import torch
 from torch import nn
 import pytorch_lightning as pl
 
-import kornia.augmentation as K
 
 # from muar.loss import MixUpCrossEntropy
 # from muar.transform_lists import kornia_list, albumentations_list
@@ -326,7 +326,7 @@ class MuAugment:
         self.C, self.S = N_COMPS, N_SELECTED
 
         self.device = device
-        if device == None:
+        if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def setup(

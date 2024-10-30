@@ -7,6 +7,7 @@ https://github.com/ACheun9/Pytorch-implementation-of-Mobile-Former/blob/main/uti
 https://github.com/ACheun9/Pytorch-implementation-of-Mobile-Former/blob/main/utils/config.py
 https://github.com/ACheun9/Pytorch-implementation-of-Mobile-Former/blob/main/utils/utils.py
 """
+
 import yaml
 
 with open("config.yaml", "r") as ymlfile:
@@ -231,7 +232,6 @@ class RandomErasing(object):
         return img
 
 
-import torch
 from torch import nn, einsum
 from einops import rearrange
 
@@ -289,10 +289,7 @@ class Former2Mobile(nn.Module):
         return x + out
 
 
-import torch
-from torch import nn, einsum
-from einops import rearrange, repeat
-from einops.layers.torch import Rearrange
+from torch import nn
 
 
 def pair(t):
@@ -342,8 +339,10 @@ class Attention(nn.Module):
             else nn.Identity()
         )
 
-    def forward(self, x):  # 2,65,1024 batch,patch+cls_token,dim (每个patch相当于一个token)
-        b, n, _, h = *x.shape, self.heads
+    def forward(
+        self, x
+    ):  # 2,65,1024 batch,patch+cls_token,dim (每个patch相当于一个token)
+        _b, _n, _, h = *x.shape, self.heads
         # 输入x每个token的维度为1024，在注意力中token被映射16个64维的特征（head*dim_head），
         # 最后再把所有head的特征合并为一个（16*1024）的特征，作为每个token的输出
         qkv = self.to_qkv(x).chunk(3, dim=-1)  # 2,65,1024 -> 2,65,1024*3
@@ -396,7 +395,6 @@ class Former(nn.Module):
         return x
 
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -596,11 +594,8 @@ class MobileDown(nn.Module):
         return out
 
 
-import time
-import torch
 import torch.nn as nn
 
-from torch.nn import init
 
 # from utils.mobile import Mobile, hswish, MobileDown
 # from utils.former import Former

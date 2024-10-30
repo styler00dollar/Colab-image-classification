@@ -493,6 +493,7 @@ class MogaNet(nn.Module):
         conv_norm_type (str): The type for convolution normalization layer.
             Defaults to 'BN'.
     """
+
     arch_zoo = {
         **dict.fromkeys(
             ["xt", "x-tiny"],

@@ -2,6 +2,7 @@
 4-Dez-21
 https://github.com/microsoft/Focal-Transformer/blob/main/classification/focal_transformer.py
 """
+
 # --------------------------------------------------------
 # Focal Transformer
 # Copyright (c) 2021 Microsoft
@@ -11,7 +12,6 @@ https://github.com/microsoft/Focal-Transformer/blob/main/classification/focal_tr
 # --------------------------------------------------------
 
 import math
-import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -1166,18 +1166,18 @@ class BasicLayer(nn.Module):
                     input_resolution=input_resolution,
                     num_heads=num_heads,
                     window_size=window_size,
-                    shift_size=(0 if (i % 2 == 0) else window_size // 2)
-                    if use_shift
-                    else 0,
+                    shift_size=(
+                        (0 if (i % 2 == 0) else window_size // 2) if use_shift else 0
+                    ),
                     expand_size=0 if (i % 2 == expand_factor) else expand_size,
                     mlp_ratio=mlp_ratio,
                     qkv_bias=qkv_bias,
                     qk_scale=qk_scale,
                     drop=drop,
                     attn_drop=attn_drop,
-                    drop_path=drop_path[i]
-                    if isinstance(drop_path, list)
-                    else drop_path,
+                    drop_path=(
+                        drop_path[i] if isinstance(drop_path, list) else drop_path
+                    ),
                     norm_layer=norm_layer,
                     pool_method=pool_method,
                     focal_level=focal_level,

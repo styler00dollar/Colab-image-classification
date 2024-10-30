@@ -1,33 +1,33 @@
 print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
-use_amp: True
 gpus: 1
-use_swa: False
+use_swa: True
+max_epochs: 200
 save_step_frequency: 10000
 
 # calculate these with means_stds.py!
 means: [0.7032, 0.6346, 0.6234]
 std: [0.2520, 0.2507, 0.2417]
 
-optimizer: Adan # Adam | AdamP | SGDP | MADGRAD (pip install madgrad) | lamb | Adan
+optimizer: adam # adam | adan | adamw_sf | adamw_win | adan_sf | lamb
 lr: 0.0001
-batch_size: 10
+batch_size: 1
 aug: RandAugment # gridmix, cutmix, MuAugment, None | RandAugment
 loss: normal # normal | CenterLoss
 size: 448 # 256 # image size
-precision: 16 # 32
+precision: 16-mixed # 16-mixed | 16-true | 32 | 32-true | bf16
 progress_bar_refresh_rate: 20
-default_root_dir: "/home/user/Schreibtisch/Colab-image-classification/train/"
+default_root_dir: "/"
 
 path:
   # pretrain
   pretrain: 
   checkpoint_path: 
 
-  training_path: '/home/user/Schreibtisch/Colab-image-classification/class_test/' # input folder
-  validation_path: '/home/user/Schreibtisch/Colab-image-classification/class_test/' # validation folder
-  test_path: '/home/user/Schreibtisch/Colab-image-classification/class_test/' # validation folder / test.py
-  log_path: "/home/user/Schreibtisch/Colab-image-classification/train/"
-  checkpoint_save_path: "/home/user/Schreibtisch/Colab-image-classification/train/" 
+  training_path: '/'
+  validation_path: '/'
+  test_path: '/'
+  log_path: "/"
+  checkpoint_save_path: "/"
 
 
 # which model architecture to train
@@ -49,9 +49,9 @@ path:
 # you can loop up models here: https://rwightman.github.io/pytorch-image-models/
 # Example: "tf_efficientnetv2_s"
 model_train: timm
-#model_choise: 'tf_efficientnetv2_b0'
+model_choise: 'tf_efficientnetv2_b0'
 #model_choise: "swin_tiny_patch4_window7_224"
-model_choise: "eva02_large_patch14_448.mim_m38m_ft_in22k_in1k"
+#model_choise: "eva02_large_patch14_448.mim_m38m_ft_in22k_in1k"
 
 #################
 

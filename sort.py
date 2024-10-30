@@ -1,13 +1,10 @@
 import torch
 import glob
-from efficientnet_pytorch import EfficientNet
 import cv2
-import torch.nn.functional as F
 import shutil
 import os
 from tqdm import tqdm
 import numpy as np
-import PIL
 from PIL import Image
 import timm
 import torchvision
@@ -40,7 +37,7 @@ def main():
     files_jpg = glob.glob(input_path + "/**/*.jpg", recursive=True)
     files.extend(files_jpg)
 
-    if half == True:
+    if half is True:
         model.half()
     model.to(device)
     model.eval()
@@ -66,7 +63,7 @@ def main():
             )
 
             image = image.to(device)
-            if half == True:
+            if half is True:
                 image = image.type(torch.cuda.HalfTensor)
 
             y_pred = model(image)

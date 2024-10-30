@@ -2,7 +2,6 @@
 """Lamb optimizer."""
 
 import collections
-import math
 
 import torch
 from tensorboardX import SummaryWriter
@@ -23,7 +22,7 @@ def log_lamb_rs(optimizer: Optimizer, event_writer: SummaryWriter, token_count: 
         event_writer.add_histogram(f"lamb/{k}", torch.tensor(v), token_count)
 
 
-class Lamb(Optimizer):
+class lamb(Optimizer):
     r"""Implements Lamb algorithm.
 
     It has been proposed in `Large Batch Optimization for Deep Learning: Training BERT in 76 minutes`_.
@@ -57,7 +56,7 @@ class Lamb(Optimizer):
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
         self.adam = adam
-        super(Lamb, self).__init__(params, defaults)
+        super(lamb, self).__init__(params, defaults)
 
     def step(self, closure=None):
         """Performs a single optimization step.

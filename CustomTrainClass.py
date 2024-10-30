@@ -1,5 +1,4 @@
 from efficientnet_pytorch import EfficientNet
-from adamp import AdamP
 
 # from adamp import SGDP
 import numpy as np
@@ -595,7 +594,7 @@ class CustomTrainClass(pl.LightningModule):
         #  train_batch[0], train_batch[1] = cutmix(train_batch[0], train_batch[1].unsqueeze(-1), 1)
         # print(train_batch[0].shape)
 
-        if self.diffaug_activate == False:
+        if self.diffaug_activate is False:
             preds = self.netD(train_batch[0])
         else:
             preds = self.netD(DiffAugment(train_batch[0], policy=self.policy))
@@ -605,7 +604,7 @@ class CustomTrainClass(pl.LightningModule):
         loss = self.criterion(preds, train_batch[1])
         writer.add_scalar("loss", loss, self.trainer.global_step)
 
-        if cfg["print_training_epoch_end_metrics"] == False:
+        if cfg["print_training_epoch_end_metrics"] is False:
             if self.aug in [None, "centerloss", "MuAugment", "RandAugment"]:
                 acc = calculate_accuracy(preds, train_batch[1])
             else:
@@ -617,52 +616,49 @@ class CustomTrainClass(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        if cfg["optimizer"] == "Adam":
+        if cfg["optimizer"] == "adam":
             optimizer = torch.optim.Adam(self.netD.parameters(), lr=cfg["lr"])
-        elif cfg["optimizer"] == "AdamP":
-            optimizer = AdamP(
-                self.netD.parameters(),
-                lr=cfg["lr"],
-                betas=(0.9, 0.999),
-                weight_decay=1e-2,
-            )
-        elif cfg["optimizer"] == "SGDP":
-            optimizer = SGDP(
-                self.netD.parameters(),
-                lr=cfg["lr"],
-                weight_decay=1e-5,
-                momentum=0.9,
-                nesterov=True,
-            )
-        elif cfg["optimizer"] == "MADGRAD":
-            from madgrad import MADGRAD
+        elif cfg["optimizer"] == "adamw_sf":
+            from optimizer.adamw_sf import adamw_sf
 
-            optimizer = MADGRAD(
+            optimizer = adamw_sf(
                 self.netD.parameters(),
                 lr=cfg["lr"],
-                momentum=0.9,
-                weight_decay=0.01,
-                eps=1e-6,
+            )
+        elif cfg["optimizer"] == "adamw_win":
+            from optimizer.adamw_win import adamw_win
+
+            optimizer = adamw_win(
+                self.netD.parameters(),
+                lr=cfg["lr"],
+            )
+
+        elif cfg["optimizer"] == "adan_sf":
+            from optimizer.adan_sf import adan_sf
+
+            optimizer = adan_sf(
+                self.netD.parameters(),
+                lr=cfg["lr"],
+            )
+        elif cfg["optimizer"] == "adan":
+            from optimizer.adan import adan
+
+            optimizer = adan(
+                self.netD.parameters(),
+                lr=cfg["lr"],
             )
         elif cfg["optimizer"] == "lamb":
-            from optimizer.lamb import Lamb
+            from optimizer.lamb import lamb
 
-            optimizer = Lamb(self.netD.parameters(), lr=cfg["lr"])
-
-        elif cfg["optimizer"] == "Adan":
-            from optimizer.adan import Adan
-
-            optimizer = Adan(
+            optimizer = lamb(
                 self.netD.parameters(),
                 lr=cfg["lr"],
-                betas=(0.02, 0.08, 0.01),
-                weight_decay=0.02,
             )
 
         return optimizer
 
     def on_training_epoch_end(self):
-        if cfg["print_training_epoch_end_metrics"] == False:
+        if cfg["print_training_epoch_end_metrics"] is False:
             loss_mean = np.mean(self.losses)
             # accuracy_mean = torch.mean(self.accuracy)
 
@@ -686,7 +682,7 @@ class CustomTrainClass(pl.LightningModule):
         # print(train_batch[0].shape)
         preds = self.netD(train_batch[0])
 
-        if self.aug == None or self.aug == "centerloss":
+        if self.aug is None or self.aug == "centerloss":
             loss = self.criterion(preds, train_batch[1])
             self.losses_val.append(loss.item())
 

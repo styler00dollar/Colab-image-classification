@@ -2,6 +2,7 @@
 DiffAugment_pytorch.py (27-3-20)
 https://github.com/mit-han-lab/data-efficient-gans/blob/master/DiffAugment_pytorch.py
 """
+
 # Differentiable Augmentation for Data-Efficient GAN Training
 # Shengyu Zhao, Zhijian Liu, Ji Lin, Jun-Yan Zhu, and Song Han
 # https://arxiv.org/pdf/2006.10738

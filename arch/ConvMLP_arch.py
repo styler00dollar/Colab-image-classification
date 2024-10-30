@@ -6,6 +6,7 @@ https://github.com/SHI-Labs/Convolutional-MLPs/blob/master/src/utils/tokenizer.p
 https://github.com/SHI-Labs/Convolutional-MLPs/blob/master/src/utils/modules.py
 https://github.com/SHI-Labs/Convolutional-MLPs/blob/master/src/utils/stochastic_depth.py
 """
+
 # Thanks to rwightman's timm package
 # github.com:rwightman/pytorch-image-models
 
@@ -49,7 +50,6 @@ class DropPath(nn.Module):
         return drop_path(x, self.drop_prob, self.training)
 
 
-import torch
 from torch.nn import (
     Module,
     ModuleList,
