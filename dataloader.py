@@ -4,6 +4,7 @@ import pytorch_lightning as pl
 import torchvision.datasets as datasets
 from RandAugment import RandAugment
 import yaml
+from data import ImageDataloader
 
 with open("config.yaml", "r") as ymlfile:
     cfg = yaml.safe_load(ymlfile)
@@ -33,7 +34,7 @@ class DataModule(pl.LightningDataModule):
         self.std = std
 
     def setup(self, stage=None):
-        img_tf = transforms.Compose(
+        img_transforms = transforms.Compose(
             [
                 transforms.Resize(size=(self.size, self.size)),
                 transforms.RandomRotation(5),
@@ -45,7 +46,7 @@ class DataModule(pl.LightningDataModule):
             ]
         )
 
-        img_tf_val = transforms.Compose(
+        img_transforms_val = transforms.Compose(
             [
                 transforms.Resize(size=(self.size, self.size)),
                 # transforms.CenterCrop(256),
@@ -55,13 +56,21 @@ class DataModule(pl.LightningDataModule):
         )
 
         if cfg["aug"] == "RandAugment":
-            img_tf.transforms.insert(0, RandAugment(2, 2))
+            img_transforms.transforms.insert(0, RandAugment(2, 2))
 
-        self.DS_train = datasets.ImageFolder(root=self.training_dir, transform=img_tf)
-        self.DS_validation = datasets.ImageFolder(
-            root=self.validation_dir, transform=img_tf_val
+        self.DS_train = ImageDataloader(
+            data_root=self.training_dir,
+            size=self.size,
+            means=self.means,
+            std=self.std,
+            transform=img_transforms,
         )
-        self.DS_test = datasets.ImageFolder(root=self.test_dir, transform=img_tf_val)
+        self.DS_validation = datasets.ImageFolder(
+            root=self.validation_dir, transform=img_transforms_val
+        )
+        self.DS_test = datasets.ImageFolder(
+            root=self.test_dir, transform=img_transforms_val
+        )
 
     def train_dataloader(self):
         return DataLoader(

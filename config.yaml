@@ -1,8 +1,8 @@
 print_training_epoch_end_metrics: False # RAM requirements for big datasets are high, disble it if you have big datasets. does not imply validation
 gpus: 1
 use_swa: True
-compile: True
-lr_finder: True
+compile: False
+lr_finder: False
 max_epochs: 200
 save_step_frequency: 10000
 
@@ -19,6 +19,7 @@ size: 448 # 256 # image size
 precision: 16-mixed # 16-mixed | 16-true | 32 | 32-true | bf16
 progress_bar_refresh_rate: 20
 default_root_dir: "/"
+img_reader: turboJPEG # turboJPEG | OpenCV
 
 path:
   # pretrain
