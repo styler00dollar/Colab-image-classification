@@ -12,14 +12,15 @@ std: [0.2520, 0.2507, 0.2417]
 
 optimizer: adam # adam | adan | adamw_sf | adamw_win | adan_sf | lamb
 lr: 0.0001
-batch_size: 1
-aug: RandAugment # gridmix, cutmix, MuAugment, None | RandAugment
-loss: normal # normal | CenterLoss
+batch_size: 5
+cutmix_or_mixup: true
 size: 448 # 256 # image size
 precision: 16-mixed # 16-mixed | 16-true | 32 | 32-true | bf16
 progress_bar_refresh_rate: 20
 default_root_dir: "/"
 img_reader: turboJPEG # turboJPEG | OpenCV
+
+ffcv: true
 
 path:
   # pretrain
@@ -32,6 +33,8 @@ path:
   log_path: "/"
   checkpoint_save_path: "/"
 
+  # only for ffcv
+  beton_path: ./data/images.beton
 
 # which model architecture to train
 

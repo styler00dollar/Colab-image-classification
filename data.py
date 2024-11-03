@@ -14,12 +14,13 @@ if cfg["img_reader"] == "turboJPEG":
 
 
 class ImageDataloader(Dataset):
-    def __init__(self, data_root, size, means, std, transform):
+    def __init__(self, data_root, size, means, std, transform=None, ffcv=False):
         self.img_paths = []
         self.labels = []
         self.size = size
         self.transform = transform
         self.load_data(data_root)
+        self.ffcv = ffcv
 
     def load_data(self, root):
         # Loop through each subfolder in sorted order
@@ -50,6 +51,7 @@ class ImageDataloader(Dataset):
         elif cfg["img_reader"] == "turboJPEG":
             img = jpeg_reader.decode(open(img_path, "rb").read(), 0)  # 0 = RGB
 
-        img = self.transform(img)
+        if not self.ffcv:
+            img = self.transform(img)
         img_class = self.labels[index]
         return img, img_class

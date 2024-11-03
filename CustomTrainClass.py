@@ -5,8 +5,7 @@ import numpy as np
 from statistics import mean
 import pytorch_lightning as pl
 import torch
-from accuracy import calculate_accuracy, calc_accuracy_gridmix
-from diffaug import DiffAugment
+from accuracy import calculate_accuracy
 import yaml
 
 with open("config.yaml", "r") as ymlfile:
@@ -15,9 +14,6 @@ with open("config.yaml", "r") as ymlfile:
 from tensorboardX import SummaryWriter
 
 writer = SummaryWriter(logdir=cfg["path"]["log_path"])
-
-if cfg["aug"] == "MuAugment":
-    from MuarAugment import BatchRandAugment, MuAugment
 
 
 class CustomTrainClass(pl.LightningModule):
@@ -549,16 +545,7 @@ class CustomTrainClass(pl.LightningModule):
                 n_holes_x=(2, 6),
             )
 
-        self.aug = aug
-
-        if cfg["loss"] == "CenterLoss":
-            from centerloss import CenterLoss
-
-            self.criterion = CenterLoss(
-                num_classes=num_classes, feat_dim=2, use_gpu=True
-            )
-        elif cfg["loss"] == "normal":
-            self.criterion = torch.nn.CrossEntropyLoss()
+        self.criterion = torch.nn.CrossEntropyLoss()
 
         self.accuracy = []
         self.losses = []
@@ -567,57 +554,32 @@ class CustomTrainClass(pl.LightningModule):
         self.losses_val = []
 
         self.policy = policy
-        self.iter_check = 0
 
-        if cfg["aug"] == "MuAugment":
-            rand_augment = BatchRandAugment(
-                N_TFMS=3, MAGN=3, mean=cfg["means"], std=cfg["std"]
-            )
-            self.mu_transform = MuAugment(rand_augment, N_COMPS=4, N_SELECTED=2)
+        if cfg["cutmix_or_mixup"]:
+            from torchvision.transforms import v2
+
+            cutmix = v2.CutMix(num_classes=2)
+            mixup = v2.MixUp(num_classes=2)
+            self.cutmix_or_mixup = v2.RandomChoice([cutmix, mixup])
 
     def forward(self, x):
         return self.netD(x)
 
     def training_step(self, train_batch, batch_idx):
-        """
-        if self.trainer.global_step != 0:
-            if self.iter_check == self.trainer.global_step:
-                self.trainer.global_step += 1
-            self.iter_check = self.trainer.global_step
-        """
+        input_data = train_batch[0]
 
-        if self.aug == "gridmix" or self.aug == "cutmix":
-            train_batch[0], train_batch[1] = self.criterion.get_sample(
-                images=train_batch[0], targets=train_batch[1].unsqueeze(-1)
-            )
-        elif self.aug == "MuAugment":
-            self.mu_transform.setup(self)
-            train_batch[0], train_batch[1] = self.mu_transform(
-                (train_batch[0], train_batch[1])
-            )
+        if cfg["ffcv"]:
+            orig_labels = train_batch[1].view(-1)
+        if not cfg["ffcv"]:
+            orig_labels = train_batch[1]
 
-        # elif self.aug == 'cutmix':
-        #  train_batch[0], train_batch[1] = cutmix(train_batch[0], train_batch[1].unsqueeze(-1), 1)
-        # print(train_batch[0].shape)
+        if cfg["cutmix_or_mixup"]:
+            input_data, orig_labels = self.cutmix_or_mixup(input_data, orig_labels)
 
-        if self.diffaug_activate is False:
-            preds = self.netD(train_batch[0])
-        else:
-            preds = self.netD(DiffAugment(train_batch[0], policy=self.policy))
+        preds = self.netD(input_data)
 
-        # Calculate loss
-        # print(preds.shape, train_batch[1].shape)
-        loss = self.criterion(preds, train_batch[1])
+        loss = self.criterion(preds, orig_labels)
         writer.add_scalar("loss", loss, self.trainer.global_step)
-
-        if cfg["print_training_epoch_end_metrics"] is False:
-            if self.aug in [None, "centerloss", "MuAugment", "RandAugment"]:
-                acc = calculate_accuracy(preds, train_batch[1])
-            else:
-                acc = calc_accuracy_gridmix(preds, train_batch[1])
-            writer.add_scalar("acc", acc, self.trainer.global_step)
-            self.accuracy.append(acc)
-            self.losses.append(loss.item())
 
         return loss
 
@@ -667,10 +629,7 @@ class CustomTrainClass(pl.LightningModule):
             loss_mean = np.mean(self.losses)
             # accuracy_mean = torch.mean(self.accuracy)
 
-        if self.aug in [None, "centerloss", "MuAugment", "RandAugment"]:
-            accuracy_mean = torch.mean(torch.stack(self.accuracy))
-        else:
-            accuracy_mean = np.mean(self.accuracy)
+        accuracy_mean = np.mean(self.accuracy)
 
         print(
             f"'Epoch': {self.current_epoch}, 'loss': {loss_mean:.2f}, 'accuracy': {accuracy_mean:.2f}"
@@ -719,6 +678,5 @@ class CustomTrainClass(pl.LightningModule):
 
     def test_step(self, train_batch, train_idx):
         preds = self.netD(train_batch[0])
-        print("################")
         print(train_batch[1])
         print(preds.topk(k=1)[1])

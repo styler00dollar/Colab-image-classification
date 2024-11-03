@@ -13,22 +13,73 @@ with open("config.yaml", "r") as ymlfile:
 
 
 def main():
-    dm = DataModule(
-        training_path=cfg["path"]["training_path"],
-        validation_path=cfg["path"]["validation_path"],
-        test_path=cfg["path"]["test_path"],
-        num_workers=cfg["num_workers"],
-        size=cfg["size"],
-        batch_size=cfg["batch_size"],
-        means=cfg["means"],
-        std=cfg["std"],
-    )
+    if cfg["ffcv"]:
+        from ffcv.fields.basics import IntDecoder
+        from ffcv.loader import OrderOption
+        from ffcv.transforms import (
+            ToTensor,
+            ToTorchImage,
+            NormalizeImage,
+            RandomBrightness,
+            RandomContrast,
+            RandomSaturation,
+        )
+        from ffcv_pl.data_loading import FFCVDataModule
+        from ffcv_pl.ffcv_utils.augmentations import DivideImage255
+        from ffcv_pl.ffcv_utils.utils import FFCVPipelineManager
+        from torchvision.transforms import RandomHorizontalFlip
+        import numpy as np
+
+        ffcv_pipeline = FFCVPipelineManager(
+            cfg["path"]["beton_path"],  # dataset_creation.py
+            pipeline_transforms=[
+                # image pipeline
+                # todo: augmentation
+                [
+                    NormalizeImage(
+                        mean=np.array(cfg["means"]),
+                        std=np.array(cfg["std"]),
+                        type=np.float32,
+                    ),
+                    RandomBrightness(magnitude=0.2, p=0.2),
+                    RandomContrast(magnitude=0.2, p=0.2),
+                    RandomSaturation(magnitude=0.2, p=0.2),
+                    ToTensor(),
+                    ToTorchImage(),
+                    DivideImage255(dtype=torch.float32),
+                    RandomHorizontalFlip(p=0.5),
+                ],
+                # label (int) pipeline
+                [IntDecoder(), ToTensor()],
+            ],
+            ordering=OrderOption.RANDOM,
+        )
+
+        # todo: validation
+        dm = FFCVDataModule(
+            batch_size=cfg["batch_size"],
+            is_dist=False,
+            num_workers=cfg["num_workers"],
+            train_manager=ffcv_pipeline,
+            val_manager=ffcv_pipeline,
+        )
+    if not cfg["ffcv"]:
+        dm = DataModule(
+            training_path=cfg["path"]["training_path"],
+            validation_path=cfg["path"]["validation_path"],
+            test_path=cfg["path"]["test_path"],
+            num_workers=cfg["num_workers"],
+            size=cfg["size"],
+            batch_size=cfg["batch_size"],
+            means=cfg["means"],
+            std=cfg["std"],
+        )
+
     model = CustomTrainClass(
         model_train=cfg["model_train"],
         num_classes=cfg["num_classes"],
         diffaug_activate=cfg["diffaug_activate"],
         policy=cfg["policy"],
-        aug=cfg["aug"],
     )
 
     callbacks = []

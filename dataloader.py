@@ -2,7 +2,6 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 import torchvision.datasets as datasets
-from RandAugment import RandAugment
 import yaml
 from data import ImageDataloader
 
@@ -36,12 +35,10 @@ class DataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         img_transforms = transforms.Compose(
             [
+                transforms.ToTensor(),
                 transforms.Resize(size=(self.size, self.size)),
                 transforms.RandomRotation(5),
-                transforms.CenterCrop(size=self.size),
-                # transforms.RandomCrop(self.size),
                 transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
                 transforms.Normalize(mean=self.means, std=self.std),
             ]
         )
@@ -49,14 +46,10 @@ class DataModule(pl.LightningDataModule):
         img_transforms_val = transforms.Compose(
             [
                 transforms.Resize(size=(self.size, self.size)),
-                # transforms.CenterCrop(256),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=self.means, std=self.std),
             ]
         )
-
-        if cfg["aug"] == "RandAugment":
-            img_transforms.transforms.insert(0, RandAugment(2, 2))
 
         self.DS_train = ImageDataloader(
             data_root=self.training_dir,
