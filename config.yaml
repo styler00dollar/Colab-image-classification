@@ -18,9 +18,9 @@ size: 448 # 256 # image size
 precision: 16-mixed # 16-mixed | 16-true | 32 | 32-true | bf16
 progress_bar_refresh_rate: 20
 default_root_dir: "/"
-img_reader: turboJPEG # turboJPEG | OpenCV
+img_reader: OpenCV # turboJPEG | OpenCV
 
-ffcv: true
+ffcv: false
 
 path:
   # pretrain
@@ -38,33 +38,22 @@ path:
 
 # which model architecture to train
 
-# efficientnet-b0 up to efficientnet-b8 (pip install efficientnet_pytorch)
-# mobilenetv3_small / mobilenetv3_large
-# resnet50 / resnet101 / resnet152
-# ViT / DeepViT
-# RepVGG-A0, RepVGG-A1, RepVGG-A2, RepVGG-B0, RepVGG-B1, RepVGG-B1g2, RepVGG-B1g4, RepVGG-B2, RepVGG-B2g2, RepVGG-B2g4, RepVGG-B3, RepVGG-B3g2, RepVGG-B3g4
-# squeezenet_1_0 / squeezenet_1_1
-# vgg11, vgg13, vgg16, vgg19
-# SwinTransformer
-
-# for vgg and resnet
-#pretrain: False
-
 # timm
 # pip install timm
 # you can loop up models here: https://rwightman.github.io/pytorch-image-models/
 # Example: "tf_efficientnetv2_s"
-model_train: timm
-model_choise: 'tf_efficientnetv2_b0'
+#model_train: timm
+#model_choise: 'tf_efficientnetv2_b0'
 #model_choise: "swin_tiny_patch4_window7_224"
 #model_choise: "eva02_large_patch14_448.mim_m38m_ft_in22k_in1k"
 
 #################
 
-# other models with configurable parameters
-#model_train: effV2
-#conv: fft # fft | conv2d
-#model_size: s # s | m | l | xl
+model_train: effV2
+# fft | conv2d | FastKANConv2DLayer | KACNConv2DLayer | BottleNeckKAGNConv2DLayer | KAGNConv2DLayer
+# KAGNConv2DLayerV2 | KAJNConv2DLayer | KALNConv2DLayer | KANConv2DLayer | WavKANConv2DLayer
+conv: conv2d 
+model_size: s # s | m | l | xl
 
 # x-transformers
 # pip install x-transformers

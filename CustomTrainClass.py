@@ -227,23 +227,24 @@ class CustomTrainClass(pl.LightningModule):
             )
 
         elif model_train == "effV2":
-            if cfg["size"] == "s":
+            if cfg["model_size"] == "s":
                 from arch.efficientnetV2_arch import effnetv2_s
 
                 self.netD = effnetv2_s(num_classes=num_classes)
-            elif cfg["size"] == "m":
+            elif cfg["model_size"] == "m":
                 from arch.efficientnetV2_arch import effnetv2_m
 
                 self.netD = effnetv2_m(num_classes=num_classes)
-            elif cfg["size"] == "l":
+            elif cfg["model_size"] == "l":
                 from arch.efficientnetV2_arch import effnetv2_l
 
                 self.netD = effnetv2_l(num_classes=num_classes)
-            elif cfg["size"] == "xl":
+            elif cfg["model_size"] == "xl":
                 from arch.efficientnetV2_arch import effnetv2_xl
 
                 self.netD = effnetv2_xl(num_classes=num_classes)
-
+            else:
+                raise ValueError("model_size unknown")
         elif model_train == "x_transformers":
             from x_transformers import ViTransformerWrapper, Encoder
 

@@ -17,6 +17,24 @@ with open("config.yaml", "r") as ymlfile:
 
 if cfg["conv"] == "fft":
     from .lama_arch import FourierUnit
+elif cfg["conv"] == "FastKANConv2DLayer":
+    from .kan.fast_kan_conv import FastKANConv2DLayer
+elif cfg["conv"] == "KACNConv2DLayer":
+    from .kan.kacn_conv import KACNConv2DLayer
+elif cfg["conv"] == "BottleNeckKAGNConv2DLayer":
+    from .kan.kagn_bottleneck_conv import BottleNeckKAGNConv2DLayer
+elif cfg["conv"] == "KAGNConv2DLayer":
+    from .kan.kagn_conv import KAGNConv2DLayer
+elif cfg["conv"] == "KAGNConv2DLayerV2":
+    from .kan.kagn_conv_v2 import KAGNConv2DLayerV2
+elif cfg["conv"] == "KAJNConv2DLayer":
+    from .kan.kajn_conv import KAJNConv2DLayer
+elif cfg["conv"] == "KALNConv2DLayer":
+    from .kan.kaln_conv import KALNConv2DLayer
+elif cfg["conv"] == "KANConv2DLayer":
+    from .kan.kan_conv import KANConv2DLayer
+elif cfg["conv"] == "WavKANConv2DLayer":
+    from .kan.wav_kan import WavKANConv2DLayer
 
 import torch
 import torch.nn as nn
@@ -75,18 +93,162 @@ class SELayer(nn.Module):
 def conv_3x3_bn(inp, oup, stride):
     if cfg["conv"] == "fft":
         return nn.Sequential(FourierUnit(inp, oup), nn.BatchNorm2d(oup), SiLU())
-    elif cfg["network_D"]["conv"] == "conv2d":
+    elif cfg["conv"] == "conv2d":
         return nn.Sequential(
             nn.Conv2d(inp, oup, 3, stride, 1, bias=False), nn.BatchNorm2d(oup), SiLU()
+        )
+    elif cfg["conv"] == "FastKANConv2DLayer":
+        return nn.Sequential(
+            FastKANConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KACNConv2DLayer":
+        return nn.Sequential(
+            KACNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "BottleNeckKAGNConv2DLayer":
+        return nn.Sequential(
+            BottleNeckKAGNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KAGNConv2DLayer":
+        return nn.Sequential(
+            KAGNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KAGNConv2DLayerV2":
+        return nn.Sequential(
+            KAGNConv2DLayerV2(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KAJNConv2DLayer":
+        return nn.Sequential(
+            KAJNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KALNConv2DLayer":
+        return nn.Sequential(
+            KALNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KANConv2DLayer":
+        return nn.Sequential(
+            KANConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "WavKANConv2DLayer":
+        return nn.Sequential(
+            WavKANConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=3, stride=stride, padding=1
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
         )
 
 
 def conv_1x1_bn(inp, oup):
     if cfg["conv"] == "fft":
         return nn.Sequential(FourierUnit(inp, oup), nn.BatchNorm2d(oup), SiLU())
-    elif cfg["network_D"]["conv"] == "conv2d":
+    elif cfg["conv"] == "conv2d":
         return nn.Sequential(
             nn.Conv2d(inp, oup, 1, 1, 0, bias=False), nn.BatchNorm2d(oup), SiLU()
+        )
+    elif cfg["conv"] == "FastKANConv2DLayer":
+        return nn.Sequential(
+            FastKANConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KACNConv2DLayer":
+        return nn.Sequential(
+            KACNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "BottleNeckKAGNConv2DLayer":
+        return nn.Sequential(
+            BottleNeckKAGNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KAGNConv2DLayer":
+        return nn.Sequential(
+            KAGNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KAGNConv2DLayerV2":
+        return nn.Sequential(
+            KAGNConv2DLayerV2(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KAJNConv2DLayer":
+        return nn.Sequential(
+            KAJNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KALNConv2DLayer":
+        return nn.Sequential(
+            KALNConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "KANConv2DLayer":
+        return nn.Sequential(
+            KANConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
+        )
+    elif cfg["conv"] == "WavKANConv2DLayer":
+        return nn.Sequential(
+            WavKANConv2DLayer(
+                input_dim=inp, output_dim=oup, kernel_size=1, stride=1, padding=0
+            ),
+            nn.BatchNorm2d(oup),
+            SiLU(),
         )
 
 
@@ -98,24 +260,6 @@ class MBConv(nn.Module):
         hidden_dim = round(inp * expand_ratio)
         self.identity = stride == 1 and inp == oup
         if use_se:
-            """
-            if cfg['conv'] == "fft":
-                self.conv = nn.Sequential(
-                  # pw
-                  FourierUnit(inp, hidden_dim),
-                  nn.BatchNorm2d(hidden_dim),
-                  SiLU(),
-                  # dw
-                  FourierUnit(hidden_dim, hidden_dim),
-                  nn.BatchNorm2d(hidden_dim),
-                  SiLU(),
-                  SELayer(inp, hidden_dim),
-                  # pw-linear
-                  FourierUnit(hidden_dim, oup),
-                  nn.BatchNorm2d(oup),
-              )
-            elif cfg['network_D']['conv'] == "conv2d":
-            """
             self.conv = nn.Sequential(
                 # pw
                 nn.Conv2d(inp, hidden_dim, 1, 1, 0, bias=False),
@@ -133,19 +277,6 @@ class MBConv(nn.Module):
                 nn.BatchNorm2d(oup),
             )
         else:
-            """
-            if cfg['conv'] == "fft":
-              self.conv = nn.Sequential(
-                  # fused
-                  FourierUnit(inp, hidden_dim),
-                  nn.BatchNorm2d(hidden_dim),
-                  SiLU(),
-                  # pw-linear
-                  FourierUnit(hidden_dim, oup),
-                  nn.BatchNorm2d(oup),
-              )
-            elif cfg['network_D']['conv'] == "conv2d":
-            """
             self.conv = nn.Sequential(
                 # fused
                 nn.Conv2d(inp, hidden_dim, 3, stride, 1, bias=False),
