@@ -10,6 +10,10 @@ save_step_frequency: 10000
 means: [0.7032, 0.6346, 0.6234]
 std: [0.2520, 0.2507, 0.2417]
 
+# ffcv requires 0-255
+#means: [179.316, 161.823, 158.967]
+#std: [64.26, 63.9285, 61.6335]
+
 optimizer: adam # adam | adan | adamw_sf | adamw_win | adan_sf | lamb
 lr: 0.0001
 batch_size: 5
