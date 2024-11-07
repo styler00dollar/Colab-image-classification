@@ -7,5 +7,3 @@ Dependencies:
 pip install torch torchvision torchaudio
 pip install albumentations scikit-learn kornia efficientnet_pytorch x_transformers vit-pytorch swin-transformer-pytorch adamp tensorboardX torchvision timm madgrad pytorch_lightning git+https://github.com/styler00dollar/pytorch-randaugment adan-pytorch git+https://github.com/lilohuang/PyTurboJPEG.git ffcv ffcv_pl
 ```
-
-Old Colabs can be found in the `depricated` branch.
