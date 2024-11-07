@@ -14,8 +14,8 @@ std: [0.2520, 0.2507, 0.2417]
 #means: [179.316, 161.823, 158.967]
 #std: [64.26, 63.9285, 61.6335]
 
-optimizer: adam # adam | adan | adamw_sf | adamw_win | adan_sf | lamb
-lr: 0.0001
+optimizer: adan # adam | adan | adamw_sf | adamw_win | adan_sf | lamb
+lr: 0.001
 batch_size: 5
 cutmix_or_mixup: true
 size: 448 # 256 # image size
