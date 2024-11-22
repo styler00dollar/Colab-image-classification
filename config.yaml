@@ -19,7 +19,7 @@ lr: 0.001
 batch_size: 5
 cutmix_or_mixup: true
 size: 448 # 256 # image size
-precision: 16-mixed # 16-mixed | 16-true | 32 | 32-true | bf16
+precision: 16-mixed # 16-mixed | 16-true | 32 | 32-true | bf16 | transformer-engine | transformer-engine-float16
 progress_bar_refresh_rate: 20
 default_root_dir: "/"
 img_reader: OpenCV # turboJPEG | OpenCV
