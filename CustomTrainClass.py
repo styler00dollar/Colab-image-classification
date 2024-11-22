@@ -644,12 +644,17 @@ class CustomTrainClass(pl.LightningModule):
         self.accuracy = []
 
     def validation_step(self, train_batch, train_idx):
-        # print(train_batch[0].shape)
-        preds = self.netD(train_batch[0])
+        input_data = train_batch[0]
 
-        if self.aug is None or self.aug == "centerloss":
-            loss = self.criterion(preds, train_batch[1])
-            self.losses_val.append(loss.item())
+        if cfg["ffcv"]:
+            orig_labels = train_batch[1].view(-1)
+        if not cfg["ffcv"]:
+            orig_labels = train_batch[1]
+
+        preds = self.netD(input_data)
+
+        loss = self.criterion(preds, orig_labels)
+        self.losses_val.append(loss.item())
 
         self.accuracy_val.append(calculate_accuracy(preds, train_batch[1]).item())
 
