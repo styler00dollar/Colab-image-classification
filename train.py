@@ -14,15 +14,13 @@ with open("config.yaml", "r") as ymlfile:
 
 def main():
     if cfg["ffcv"]:
+        import torch
         from ffcv.fields.basics import IntDecoder
         from ffcv.loader import OrderOption
         from ffcv.transforms import (
             ToTensor,
             ToTorchImage,
             NormalizeImage,
-            RandomBrightness,
-            RandomContrast,
-            RandomSaturation,
         )
         from ffcv_pl.data_loading import FFCVDataModule
         from ffcv_pl.ffcv_utils.augmentations import DivideImage255
@@ -41,9 +39,6 @@ def main():
                         std=np.array(cfg["std"]),
                         type=np.float32,
                     ),
-                    RandomBrightness(magnitude=0.2, p=0.2),
-                    RandomContrast(magnitude=0.2, p=0.2),
-                    RandomSaturation(magnitude=0.2, p=0.2),
                     ToTensor(),
                     ToTorchImage(),
                     DivideImage255(dtype=torch.float32),
