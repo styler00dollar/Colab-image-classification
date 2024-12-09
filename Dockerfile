@@ -6,10 +6,10 @@
 # Dockerfile to run ONNXRuntime with TensorRT integration
 
 # nVidia TensorRT Base Image
-FROM nvcr.io/nvidia/tensorrt:24.10-py3
+FROM nvcr.io/nvidia/tensorrt:24.11-py3
 
 ARG ONNXRUNTIME_REPO=https://github.com/Microsoft/onnxruntime
-ARG ONNXRUNTIME_BRANCH=rel-1.20.0
+ARG ONNXRUNTIME_BRANCH=rel-1.20.1
 ARG CMAKE_CUDA_ARCHITECTURES=37;50;52;60;61;70;75;80;89
 
 RUN apt-get update &&\
